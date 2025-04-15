@@ -1,4 +1,4 @@
-package main
+package ws
 
 import (
 	"encoding/json"
@@ -29,6 +29,10 @@ func PrintSocketList() {
 		return
 	}
 	fmt.Println(string(pretty))
+}
+
+func AddSocketToList(client_s *Socket) {
+	socketList = append(socketList, client_s)
 }
 
 func RemoveSocketFromList(client_s *Socket) {

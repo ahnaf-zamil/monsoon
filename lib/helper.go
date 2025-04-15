@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"crypto/rand"
@@ -10,6 +10,7 @@ import (
 
 /* Helper functions */
 func GenerateSocketID() string {
+	// Generates 8 byte IDs for sockets
 	bytes := make([]byte, 8)
 	if _, err := rand.Read(bytes); err != nil {
 		panic(err)
@@ -18,6 +19,7 @@ func GenerateSocketID() string {
 }
 
 func PrettyPrintSyncMap(data *sync.Map) {
+	// Handy function for pretty printing sync.Map objects
 	m := map[string]any{}
 	data.Range(func(key, value any) bool {
 		m[fmt.Sprint(key)] = value

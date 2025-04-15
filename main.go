@@ -4,8 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
+	"ws_realtime_app/controller"
+	"ws_realtime_app/lib"
+	"ws_realtime_app/ws"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 )
 
 var upgrader = websocket.Upgrader{
@@ -15,13 +22,13 @@ var upgrader = websocket.Upgrader{
 }
 
 // Handles socket client connecting to the server
-func RegisterSocketClient(wsConn *websocket.Conn, userId string) (*Socket, error) {
-	s := &Socket{ID: GenerateSocketID(), Rooms: make(map[string]bool), UserID: userId, WsConn: wsConn}
-	socketList = append(socketList, s)
+func RegisterSocketClient(wsConn *websocket.Conn, userId string) (*ws.Socket, error) {
+	s := &ws.Socket{ID: lib.GenerateSocketID(), Rooms: make(map[string]bool), UserID: userId, WsConn: wsConn}
+	ws.AddSocketToList(s)
 
 	// Adding socket to rooms
 	// TODO: Connect database and fetch room list to join
-	AddSocketToRoom(s, "amogus")
+	ws.AddSocketToRoom(s, "amogus")
 
 	// Return list of rooms to the client
 	roomsList := []string{}
@@ -39,20 +46,20 @@ func RegisterSocketClient(wsConn *websocket.Conn, userId string) (*Socket, error
 }
 
 // Handles any socket disconnection event
-func HandleSocketDisconnect(client_s *Socket) {
+func HandleSocketDisconnect(client_s *ws.Socket) {
 	// Removes socket from the sock list state
 	log.Printf("Disconnected client: %s (%s)\n", client_s.ID, client_s.WsConn.RemoteAddr())
-	RemoveSocketFromList(client_s)
+	ws.RemoveSocketFromList(client_s)
 
 	// Remove socket from all rooms
 	for k := range client_s.Rooms {
-		RemoveSocketFromRoom(client_s, k)
+		ws.RemoveSocketFromRoom(client_s, k)
 	}
 }
 
-func WsHandler(w http.ResponseWriter, r *http.Request) {
+func WsHandler(c *gin.Context) {
 	// Upgrading connection to websocket
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		fmt.Println("Error upgrading:", err)
 		return
@@ -60,17 +67,17 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer conn.Close()
 
-	log.Println("Client connected from:", r.RemoteAddr)
+	log.Println("Client connected from:", c.ClientIP())
 
 	// Take authentication token. For now we consider token to be user ID
-	token := r.URL.Query().Get("token")
+	token := c.Query("token")
 
 	if token == "" {
 		if err := conn.WriteJSON(map[string]any{"error": "Unauthorized: Missing token"}); err != nil {
 			fmt.Println("Error writing msg:", err)
 		}
 
-		log.Printf("Disconnect: %s connected with bad token", r.RemoteAddr)
+		log.Printf("Disconnect: %s connected with bad token", c.ClientIP())
 		return
 	}
 
@@ -99,7 +106,6 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			log.Println("Recv:", msg_data)
-
 		}
 	}
 	// Handle disconnection to cleanup socket and room states
@@ -107,10 +113,35 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/ws", WsHandler)
+	// Load dotenv and config
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+
+	conf := LoadConfig()
+
+	// Initialize NATS connection and drain connection upon return
+	nc := lib.InitNATS(conf.NATSUrl)
+	defer nc.Drain()
+
+	// Initialize Gin with CORS, and register controller routes
+	r := gin.Default()
+	r.GET("/ws", WsHandler)
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowHeaders:     []string{"*"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
+		MaxAge: 12 * time.Hour,
+	}))
+	controller.InitControllers(r)
+
+	// Here we go
 	fmt.Println("Websocket server started")
 
-	err := http.ListenAndServe("0.0.0.0:8080", nil)
+	err := http.ListenAndServe("0.0.0.0:8080", r)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 	}
