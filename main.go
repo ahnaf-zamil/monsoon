@@ -118,7 +118,10 @@ func main() {
 		log.Println("No .env file found")
 	}
 
-	conf := LoadConfig()
+	conf := lib.LoadConfig()
+
+	// Initialize snowflake ID generator
+	lib.InitSnowflakeNode()
 
 	// Initialize NATS connection and drain connection upon return
 	nc := lib.InitNATS(conf.NATSUrl)

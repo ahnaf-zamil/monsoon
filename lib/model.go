@@ -1,13 +1,11 @@
 package lib
 
-import "time"
-
 /* Data models for internal use */
 
-type Message struct {
-	ID        string
-	Content   string
-	CreatedAt time.Time
-	UserID    string
-	RoomID    string
+type MessageModel struct {
+	ID        string `json:"id"`
+	Content   string `json:"content"`
+	CreatedAt int64  `json:"created_at"`
+	UserID    string `json:"user_id"`
+	RoomID    string `json:"room_id"`
 }

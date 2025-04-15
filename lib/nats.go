@@ -24,6 +24,7 @@ func InitNATS(natsURL string) *nats.Conn {
 func InitMsgListener() {
 	/* This function will receive messages fromNATS and dispatch to all sockets in rooms */
 	nc.Subscribe("message", func(m *nats.Msg) {
+		// TODO: Process message and dispatch to connected sockets and rooms
 		log.Printf("Received NATS msg: %s\n", string(m.Data))
 	})
 }
