@@ -93,3 +93,9 @@ func RemoveSocketFromRoom(s *Socket, roomId string) {
 		return true
 	})
 }
+
+func GetSocketsForRoom(roomId string) []*Socket {
+	// Get all sockets connected in a room using room ID
+	s, _ := roomState.LoadOrStore(roomId, []*Socket{})
+	return s.([]*Socket)
+}

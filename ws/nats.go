@@ -1,8 +1,9 @@
-package lib
+package ws
 
 import (
 	"encoding/json"
 	"log"
+	"ws_realtime_app/lib"
 
 	"github.com/nats-io/nats.go"
 )
@@ -26,6 +27,22 @@ func InitMsgListener() {
 	nc.Subscribe("message", func(m *nats.Msg) {
 		// TODO: Process message and dispatch to connected sockets and rooms
 		log.Printf("Received NATS msg: %s\n", string(m.Data))
+
+		// Unmarshals received JSON into model for further processing
+		// TODO: In case further message verification and integrity needs to be checked, do it here
+		var msg lib.MessageModel
+		err := json.Unmarshal(m.Data, &msg)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Printf("%+v\n", msg)
+
+		// Now we will start dispatching it to all sockets
+		s := GetSocketsForRoom(msg.RoomID)
+		log.Println(s)
+
+		// log.Println(ws.GetSocketsForRoom())
 	})
 }
 

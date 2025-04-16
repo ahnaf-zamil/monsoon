@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 	"ws_realtime_app/lib"
+	"ws_realtime_app/ws"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,7 +46,7 @@ func MessageCreateRoute(c *gin.Context) {
 
 	// Dispatch new message to NATS
 	// TODO: Dispatch message to Kafka logs for batch processing
-	lib.SendMsgNATS(payload)
+	ws.SendMsgNATS(payload)
 
 	c.JSON(http.StatusCreated, rs)
 }
