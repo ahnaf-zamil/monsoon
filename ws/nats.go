@@ -36,13 +36,16 @@ func InitMsgListener() {
 			panic(err)
 		}
 
-		log.Printf("%+v\n", msg)
-
 		// Now we will start dispatching it to all sockets
-		s := GetSocketsForRoom(msg.RoomID)
-		log.Println(s)
+		sock_list := GetSocketsForRoom(msg.RoomID)
 
-		// log.Println(ws.GetSocketsForRoom())
+		// Looping over all sockets in the room and forwarding the message to them
+		for _, s := range sock_list {
+			if err := s.WsConn.WriteJSON(msg); err != nil {
+				// Closing connection in case of write error, client-side should reconnect
+				defer s.WsConn.Close()
+			}
+		}
 	})
 }
 
