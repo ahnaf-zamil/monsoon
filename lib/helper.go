@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+
+	"github.com/gin-gonic/gin"
 )
 
 /* Helper functions */
@@ -31,4 +33,10 @@ func PrettyPrintSyncMap(data *sync.Map) {
 		panic(err)
 	}
 	fmt.Println(string(b))
+}
+
+func WriteAPIError(c *gin.Context, message string, rs *APIResponse, r_code int) {
+	rs.Err = true
+	rs.Message = message
+	c.JSON(r_code, rs)
 }

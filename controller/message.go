@@ -12,21 +12,16 @@ import (
 func MessageCreateRoute(c *gin.Context) {
 	// Validating input
 	req := &lib.MessageCreateSchema{}
-	rs := lib.APIResponse{}
-	if err := c.BindJSON(req); err != nil {
 
-		rs.Err = true
-		rs.Message = "Invalid input"
-		c.JSON(http.StatusNotAcceptable, rs)
+	rs, err := lib.ValidateRequestInput(c, req)
+	if err != nil {
+		lib.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
 	}
 
 	user_id, exists := c.Get("user_id")
 	if !exists {
-		rs.Err = true
-		rs.Message = "Authentication context error"
-
-		c.JSON(http.StatusInternalServerError, rs)
+		lib.WriteAPIError(c, "Auth context error", rs, http.StatusUnauthorized)
 		return
 	}
 

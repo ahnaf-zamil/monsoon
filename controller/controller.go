@@ -12,6 +12,9 @@ func InitControllers(r *gin.Engine) {
 
 	api := r.Group("/api")
 	msg := api.Group("/message", middleware.RequireAuth())
+	user := api.Group("/user")
 
 	msg.POST("/create/:room_id", MessageCreateRoute)
+
+	user.POST("/create", UserCreateRoute)
 }
