@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT PRIMARY KEY,
+  username STRING NOT NULL,
+  display_name STRING NOT NULL,
+  created_at BIGINT NOT NULL
+)

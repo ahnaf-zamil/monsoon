@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"net/http"
 	"time"
 	"ws_realtime_app/controller"
+	"ws_realtime_app/db"
 	"ws_realtime_app/lib"
 	"ws_realtime_app/ws"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+var PORT string = "8080"
 
 func main() {
 	// Load dotenv and config
@@ -22,8 +25,26 @@ func main() {
 
 	conf := lib.LoadConfig()
 
+	schemaFlagPtr := flag.Bool("generate_schema", false, "Generate DB schema from SQL files")
+	flag.Parse()
+
+	// Generate DB schema if the binary is run with this flag
+
+	if *schemaFlagPtr {
+		db.CreateAppDBSchemas(conf)
+		return
+	}
+
 	// Initialize snowflake ID generator
 	lib.InitSnowflakeNode()
+
+	// Connect to database
+
+	appDB := db.CreateAppDB()
+	if err := appDB.CreateConnectionPool(conf.AppDBPostgresURL); err != nil {
+		panic(err)
+	}
+	defer appDB.CloseConnection()
 
 	// Initialize NATS connection and drain connection upon return
 	nc := ws.InitNATS(conf.NATSUrl)
@@ -44,10 +65,10 @@ func main() {
 	controller.InitControllers(r)
 
 	// Here we go
-	fmt.Println("Websocket server started")
+	log.Println("Server started on port", PORT)
 
-	err := http.ListenAndServe("0.0.0.0:8080", r)
+	err := http.ListenAndServe("0.0.0.0:"+PORT, r)
 	if err != nil {
-		fmt.Println("Error starting server:", err)
+		log.Println("Error starting server:", err)
 	}
 }
