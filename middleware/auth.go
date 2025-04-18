@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/* Middleware for routes which require user authentication */
+
 func RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")

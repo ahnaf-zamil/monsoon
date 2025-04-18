@@ -9,6 +9,8 @@ import (
 	"github.com/bwmarrin/snowflake"
 )
 
+/* This system uses Twitter snowflake IDs, so here's some functions for it */
+
 var node *snowflake.Node
 
 func GetNodeID() int {

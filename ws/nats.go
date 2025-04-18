@@ -50,6 +50,8 @@ func InitMsgListener() {
 }
 
 func SendMsgNATS(content any) {
+	/* Dispatch new message to NATS cluster */
+
 	payload, err := json.Marshal(content)
 	if err == nil {
 		nc.Publish("message", payload)

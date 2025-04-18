@@ -30,4 +30,4 @@ go run . -generate_schema
 - Postgres DB setup for authentication and data store
 - Use separate databases for storing application data (users, rooms) and messages
 - Implement message bucketing and partitons
-- Set up user authentication
+- Set up JWT for user auth state 

@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Request validation helper
+
 func ValidateRequestInput[T any](c *gin.Context, req *T) (*APIResponse, error) {
 	rs := APIResponse{}
 	if err := c.BindJSON(req); err != nil {

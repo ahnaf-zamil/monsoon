@@ -7,6 +7,7 @@ type APIResponse struct {
 	Message string `json:"message"`
 	Data    any    `json:"data"`
 }
+
 type MessageCreateSchema struct {
 	Content string `json:"content" binding:"required"`
 }
@@ -16,4 +17,9 @@ type UserCreateSchema struct {
 	DisplayName string `json:"display_name" binding:"required"`
 	Email       string `json:"email" binding:"required,email"`
 	Password    string `json:"password" binding:"required,min=8"`
+}
+
+type UserLoginSchema struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }

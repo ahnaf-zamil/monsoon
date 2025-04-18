@@ -17,4 +17,5 @@ func InitControllers(r *gin.Engine) {
 	msg.POST("/create/:room_id", MessageCreateRoute)
 
 	user.POST("/create", UserCreateRoute)
+	user.POST("/login", UserLoginRoute)
 }
