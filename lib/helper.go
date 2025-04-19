@@ -72,3 +72,19 @@ func GenerateDBQueryFields(cols []UserColumn) string {
 	}
 	return selected_columns
 }
+
+func GenerateDBOrFields(fields []UserColumn) string {
+	/* Generates the OR conditions for given columns */
+	or_fields := ""
+
+	for i, col := range fields {
+		if i == len(fields)-1 {
+			// For last column, do not include OR and space
+			or_fields = or_fields + fmt.Sprintf("%s.%s=$%d", col.Table, col.Column, i+1)
+		} else {
+			or_fields = or_fields + fmt.Sprintf("%s.%s=$%d OR ", col.Table, col.Column, i+1)
+		}
+	}
+
+	return or_fields
+}

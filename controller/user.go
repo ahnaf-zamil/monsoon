@@ -29,9 +29,12 @@ func UserCreateRoute(c *gin.Context) {
 		return
 	}
 
-	// TODO: Check if user with email/username already exists and handle gracefully
-	// The GetUserByField function will be replaced by GetUserByAnyField() to check for matching email OR username
-	user, err := app.GetUserByField(c.Request.Context(), lib.ColUserEmail, req.Email)
+	// Checks if another user already exists with EITHER the same username OR same email
+	fields := map[lib.UserColumn]any{
+		lib.ColUserEmail:    req.Email,
+		lib.ColUserUsername: req.Username,
+	}
+	user, err := app.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
@@ -42,7 +45,8 @@ func UserCreateRoute(c *gin.Context) {
 		return
 	}
 
-	err = app.Users.CreateUser(c.Request.Context(), user_id.Int64(), req.Username, strings.ToLower(req.DisplayName), req.Email, pw_hash)
+	// Creating the user here
+	err = app.Users.CreateUser(c.Request.Context(), user_id.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pw_hash)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
@@ -61,7 +65,10 @@ func UserLoginRoute(c *gin.Context) {
 	}
 
 	// Check for user's existence
-	user, err := app.GetUserByField(c.Request.Context(), lib.ColUserEmail, req.Email)
+	fields := map[lib.UserColumn]any{
+		lib.ColUserEmail: req.Email,
+	}
+	user, err := app.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return

@@ -42,26 +42,26 @@ func (u *_UserDB) CreateUser(ctx context.Context, id int64, username, displayNam
 	return nil
 }
 
-func GetUserByField(ctx context.Context, column lib.UserColumn, value any) (*lib.UserModel, error) {
-	/* This function queries user based on single column value */
-
-	allowed := map[lib.UserColumn]bool{
-		lib.ColUserID:       true,
-		lib.ColUserEmail:    true,
-		lib.ColUserUsername: true,
-	}
-
-	if !allowed[column] {
-		return nil, fmt.Errorf("invalid query column: %s", column)
-	}
-
+func GetUserByAnyField(ctx context.Context, fields map[lib.UserColumn]any) (*lib.UserModel, error) {
+	/* This function queries user based on OR query for multiple fields */
+	// TODO:
 	app_db := db.GetAppDB()
 
-	// Dynamically generate select columns list
+	// Separate the fields and respective values into properly sequenced slices for later use in query generation
+	field_arr := []lib.UserColumn{}
+	value_arr := []any{}
+	for k, v := range fields {
+		field_arr = append(field_arr, k)
+		value_arr = append(value_arr, v)
+	}
 
+	// Generate the "OR" conditions using given fields
+	or_fields := lib.GenerateDBOrFields(field_arr)
+
+	// Generate the SELECT columns
 	cols := []lib.UserColumn{lib.ColUserID, lib.ColUserUsername, lib.ColUserDisplayName, lib.ColUserCreatedAt, lib.ColUserEmail, lib.ColUserPassword}
 	selected_columns := lib.GenerateDBQueryFields(cols)
-	// Looks pump in the all the goodies
+
 	query := fmt.Sprintf("SELECT %s FROM %s INNER JOIN %s ON %s.%s=%s.%s WHERE ",
 		selected_columns,
 		lib.TableUsers,
@@ -70,11 +70,10 @@ func GetUserByField(ctx context.Context, column lib.UserColumn, value any) (*lib
 		lib.ColUserID.Column,
 		lib.ColUserEmail.Table,
 		lib.ColUserID.Column)
-	query = query + fmt.Sprintf("%s.%s = $1", column.Table, column.Column)
+	query = query + or_fields
 
-	// BEHOLD, THE POWER OF RAW SQL
-	row := app_db.DBPool.QueryRow(ctx, query, value)
-
+	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
+	row := app_db.DBPool.QueryRow(ctx, query, value_arr...)
 	var user lib.UserModel
 	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.Email, &user.Password)
 
@@ -88,12 +87,6 @@ func GetUserByField(ctx context.Context, column lib.UserColumn, value any) (*lib
 		// Else, just return user
 		return &user, nil
 	}
-}
-
-func GetUserByAnyField(ctx context.Context, fields map[lib.UserColumn]any) (*lib.UserModel, error) {
-	/* This function queries user based on OR query for multiple fields */
-	// TODO:
-	return nil, nil
 }
 
 func insertUser(tx pgx.Tx, ctx context.Context, id int64, username, display_name string, created_at int64) error {
