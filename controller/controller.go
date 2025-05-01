@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"ws_realtime_app/db/app"
 	"ws_realtime_app/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -14,8 +15,10 @@ func InitControllers(r *gin.Engine) {
 	msg := api.Group("/message", middleware.RequireAuth())
 	user := api.Group("/user")
 
-	msg.POST("/create/:room_id", MessageCreateRoute)
+	msg_ctrl := &MessageController{}
+	msg.POST("/create/:room_id", msg_ctrl.MessageCreateRoute)
 
-	user.POST("/create", UserCreateRoute)
-	user.POST("/login", UserLoginRoute)
+	user_ctrl := &UserController{UserDB: app.GetUserDB()}
+	user.POST("/create", user_ctrl.UserCreateRoute)
+	user.POST("/login", user_ctrl.UserLoginRoute)
 }

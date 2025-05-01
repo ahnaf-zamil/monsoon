@@ -47,7 +47,10 @@ func main() {
 	defer appDB.CloseConnection()
 
 	// Initialize NATS connection and drain connection upon return
-	nc := ws.InitNATS(conf.NATSUrl)
+	nc, err := ws.InitNATS(conf.NATSUrl)
+	if err != nil {
+		panic(err)
+	}
 	defer nc.Drain()
 
 	// Initialize Gin with CORS, and register controller routes
@@ -67,7 +70,7 @@ func main() {
 	// Here we go
 	log.Println("Server started on port", PORT)
 
-	err := http.ListenAndServe("0.0.0.0:"+PORT, r)
+	err = http.ListenAndServe("0.0.0.0:"+PORT, r)
 	if err != nil {
 		log.Println("Error starting server:", err)
 	}

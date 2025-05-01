@@ -4,7 +4,7 @@
 ```
 - Go (Gin-Gonic, Gorilla/Websocket)
 - NATS
-- CockroachDB/PostgreSQL
+- PostgreSQL
 ```
 
 ## Features

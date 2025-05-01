@@ -9,7 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func MessageCreateRoute(c *gin.Context) {
+type MessageController struct{}
+
+func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 	// Validating input
 	req := &lib.MessageCreateSchema{}
 

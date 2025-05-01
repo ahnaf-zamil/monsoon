@@ -10,7 +10,11 @@ import (
 	"github.com/matthewhartstonge/argon2"
 )
 
-func UserCreateRoute(c *gin.Context) {
+type UserController struct {
+	UserDB app.IUserDB
+}
+
+func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 	/* User creation/registration route */
 
 	// Validating input
@@ -34,7 +38,7 @@ func UserCreateRoute(c *gin.Context) {
 		lib.ColUserEmail:    req.Email,
 		lib.ColUserUsername: req.Username,
 	}
-	user, err := app.GetUserByAnyField(c.Request.Context(), fields)
+	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
@@ -46,7 +50,7 @@ func UserCreateRoute(c *gin.Context) {
 	}
 
 	// Creating the user here
-	err = app.Users.CreateUser(c.Request.Context(), user_id.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pw_hash)
+	err = ctrl.UserDB.CreateUser(c.Request.Context(), user_id.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pw_hash)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
@@ -54,7 +58,7 @@ func UserCreateRoute(c *gin.Context) {
 	c.JSON(http.StatusCreated, rs)
 }
 
-func UserLoginRoute(c *gin.Context) {
+func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	/* User login and authentication route */
 
 	req := &lib.UserLoginSchema{}
@@ -68,7 +72,7 @@ func UserLoginRoute(c *gin.Context) {
 	fields := map[lib.UserColumn]any{
 		lib.ColUserEmail: req.Email,
 	}
-	user, err := app.GetUserByAnyField(c.Request.Context(), fields)
+	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return

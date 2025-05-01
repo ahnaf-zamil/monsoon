@@ -10,7 +10,7 @@ import (
 
 var nc *nats.Conn
 
-func InitNATS(natsURL string) *nats.Conn {
+func InitNATS(natsURL string) (*nats.Conn, error) {
 	/* Initializes NATS connection and starts message listener */
 	var err error
 	if nc, err = nats.Connect(natsURL); err != nil {
@@ -19,7 +19,7 @@ func InitNATS(natsURL string) *nats.Conn {
 
 	InitMsgListener()
 
-	return nc
+	return nc, err
 }
 
 func InitMsgListener() {
