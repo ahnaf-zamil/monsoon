@@ -10,19 +10,27 @@ import (
 
 var nc *nats.Conn
 
-func InitNATS(natsURL string) (*nats.Conn, error) {
+// All these functions will be stubbed during testing
+type INATSPublisher interface {
+	InitMsgListener()
+	SendMsgNATS(content any)
+}
+
+type NATSPublisher struct{}
+
+func (n *NATSPublisher) InitNATS(natsURL string) (*nats.Conn, error) {
 	/* Initializes NATS connection and starts message listener */
 	var err error
 	if nc, err = nats.Connect(natsURL); err != nil {
 		log.Println("Error connecting to NATS:", err)
 	}
 
-	InitMsgListener()
+	n.InitMsgListener()
 
 	return nc, err
 }
 
-func InitMsgListener() {
+func (n *NATSPublisher) InitMsgListener() {
 	/* This function will receive messages fromNATS and dispatch to all sockets in rooms */
 	nc.Subscribe("message", func(m *nats.Msg) {
 		// TODO: Process message and dispatch to connected sockets and rooms
@@ -49,7 +57,7 @@ func InitMsgListener() {
 	})
 }
 
-func SendMsgNATS(content any) {
+func (n *NATSPublisher) SendMsgNATS(content any) {
 	/* Dispatch new message to NATS cluster */
 
 	payload, err := json.Marshal(content)

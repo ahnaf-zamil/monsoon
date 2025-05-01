@@ -9,7 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type MessageController struct{}
+type MessageController struct {
+	nats_pub ws.INATSPublisher
+}
 
 func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 	// Validating input
@@ -43,7 +45,7 @@ func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 
 	// Dispatch new message to NATS
 	// TODO: Dispatch message to Kafka logs for batch processing
-	ws.SendMsgNATS(payload)
+	ctrl.nats_pub.SendMsgNATS(payload)
 
 	c.JSON(http.StatusCreated, rs)
 }

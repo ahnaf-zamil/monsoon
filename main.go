@@ -47,7 +47,8 @@ func main() {
 	defer appDB.CloseConnection()
 
 	// Initialize NATS connection and drain connection upon return
-	nc, err := ws.InitNATS(conf.NATSUrl)
+	n := &ws.NATSPublisher{}
+	nc, err := n.InitNATS(conf.NATSUrl)
 	if err != nil {
 		panic(err)
 	}

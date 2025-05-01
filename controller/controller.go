@@ -3,6 +3,7 @@ package controller
 import (
 	"ws_realtime_app/db/app"
 	"ws_realtime_app/middleware"
+	"ws_realtime_app/ws"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +16,7 @@ func InitControllers(r *gin.Engine) {
 	msg := api.Group("/message", middleware.RequireAuth())
 	user := api.Group("/user")
 
-	msg_ctrl := &MessageController{}
+	msg_ctrl := &MessageController{nats_pub: &ws.NATSPublisher{}}
 	msg.POST("/create/:room_id", msg_ctrl.MessageCreateRoute)
 
 	user_ctrl := &UserController{UserDB: app.GetUserDB()}

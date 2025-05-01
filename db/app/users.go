@@ -15,7 +15,7 @@ type UserDB struct {
 	_app_db db.AppDB
 }
 
-// Useful for mocking controllers
+// Will be stubbed during testing
 type IUserDB interface {
 	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error
 	GetUserByAnyField(ctx context.Context, fields map[lib.UserColumn]any) (*lib.UserModel, error)
