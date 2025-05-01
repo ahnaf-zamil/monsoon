@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// import "github.com/gorilla/mux"
 func InitControllers(r *gin.Engine) {
 	/* Registering HTTP route controllers by creating subrouters */
 

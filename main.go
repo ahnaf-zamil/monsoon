@@ -40,11 +40,10 @@ func main() {
 
 	// Connect to database
 
-	appDB := db.CreateAppDB()
-	if err := appDB.CreateConnectionPool(conf.AppDBPostgresURL); err != nil {
+	if err := db.CreateConnectionPool(conf.AppDBPostgresURL); err != nil {
 		panic(err)
 	}
-	defer appDB.CloseConnection()
+	defer db.CloseConnection()
 
 	// Initialize NATS connection and drain connection upon return
 	n := &ws.NATSPublisher{}

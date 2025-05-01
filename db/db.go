@@ -4,16 +4,26 @@ import (
 	"context"
 	"log"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var appDB *AppDB
+var pool *pgxpool.Pool
 
-type AppDB struct {
-	DBPool *pgxpool.Pool
+// Stub during testing
+type IPgxPool interface {
+	BeginTx(context.Context, pgx.TxOptions) (pgx.Tx, error)
+	QueryRow(context.Context, string, ...any) pgx.Row
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+	Close()
 }
 
-func (app_db *AppDB) CreateConnectionPool(dbURL string) error {
+type AppDB struct {
+	DBPool IPgxPool
+}
+
+func CreateConnectionPool(dbURL string) error {
 	conn, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
 		log.Printf("Unable to create connection pool: %v\n", err)
@@ -25,20 +35,14 @@ func (app_db *AppDB) CreateConnectionPool(dbURL string) error {
 		return err
 	}
 	log.Println("Connected to database")
-
-	app_db.DBPool = conn
+	pool = conn
 	return nil
 }
 
-func (app_db *AppDB) CloseConnection() {
-	app_db.DBPool.Close()
+func CloseConnection() {
+	pool.Close()
 }
 
 func GetAppDB() *AppDB {
-	return appDB
-}
-
-func CreateAppDB() *AppDB {
-	appDB = &AppDB{}
-	return appDB
+	return &AppDB{DBPool: pool}
 }

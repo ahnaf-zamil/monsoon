@@ -13,14 +13,12 @@ var appSchemaDir = "./schema/app"
 func CreateAppDBSchemas(conf *lib.Config) {
 	log.Println("Starting schema generation for App DB")
 
-	appDB := CreateAppDB()
-	if err := appDB.CreateConnectionPool(conf.AppDBPostgresURL); err != nil {
+	if err := CreateConnectionPool(conf.AppDBPostgresURL); err != nil {
 		panic(err)
 	}
+	defer CloseConnection()
 
-	defer appDB.CloseConnection()
-
-	pool := appDB.DBPool
+	pool := GetAppDB().DBPool
 
 	files, err := os.ReadDir(appSchemaDir) // Path of the app DB sql files
 	if err != nil {
