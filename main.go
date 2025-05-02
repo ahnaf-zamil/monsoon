@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+
 	"ws_realtime_app/controller"
 	"ws_realtime_app/db"
 	"ws_realtime_app/lib"
@@ -51,7 +52,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer nc.Drain()
+	defer func() {
+		err := nc.Drain()
+		if err != nil {
+			log.Println("NATS connection drain error:", err)
+		}
+	}()
 
 	// Initialize Gin with CORS, and register controller routes
 	r := gin.Default()

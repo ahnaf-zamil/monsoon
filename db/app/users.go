@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
+
 	"ws_realtime_app/db"
 	"ws_realtime_app/lib"
 
@@ -34,7 +36,12 @@ func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil {
+			log.Println("TX rollback error:", err)
+		}
+	}()
 
 	// Insert user data in users table
 	createdAt := time.Now().Unix()
@@ -48,7 +55,11 @@ func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName
 	if err != nil {
 		return err
 	}
-	tx.Commit(ctx)
+	err = tx.Commit(ctx)
+	if err != nil {
+		log.Println("TX commit error:", err)
+	}
+
 	return nil
 }
 

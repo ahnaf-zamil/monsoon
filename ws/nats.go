@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"log"
+
 	"ws_realtime_app/lib"
 
 	"github.com/nats-io/nats.go"
@@ -32,7 +33,7 @@ func (n *NATSPublisher) InitNATS(natsURL string) (*nats.Conn, error) {
 
 func (n *NATSPublisher) InitMsgListener() {
 	/* This function will receive messages fromNATS and dispatch to all sockets in rooms */
-	nc.Subscribe("message", func(m *nats.Msg) {
+	_, err := nc.Subscribe("message", func(m *nats.Msg) {
 		// TODO: Process message and dispatch to connected sockets and rooms
 		log.Printf("Received NATS msg: %s\n", string(m.Data))
 
@@ -55,6 +56,9 @@ func (n *NATSPublisher) InitMsgListener() {
 			}
 		}
 	})
+	if err != nil {
+		log.Println("NATS subscription error:", err)
+	}
 }
 
 func (n *NATSPublisher) SendMsgNATS(content any) {
@@ -62,6 +66,9 @@ func (n *NATSPublisher) SendMsgNATS(content any) {
 
 	payload, err := json.Marshal(content)
 	if err == nil {
-		nc.Publish("message", payload)
+		err = nc.Publish("message", payload)
+		if err != nil {
+			log.Println("NATS publish error:", err)
+		}
 	}
 }

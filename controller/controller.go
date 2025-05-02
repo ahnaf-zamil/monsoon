@@ -2,6 +2,7 @@ package controller
 
 import (
 	"ws_realtime_app/db/app"
+	"ws_realtime_app/lib"
 	"ws_realtime_app/middleware"
 	"ws_realtime_app/ws"
 
@@ -15,10 +16,10 @@ func InitControllers(r *gin.Engine) {
 	msg := api.Group("/message", middleware.RequireAuth())
 	user := api.Group("/user")
 
-	msg_ctrl := &MessageController{nats_pub: &ws.NATSPublisher{}}
+	msg_ctrl := &MessageController{NATS_PUB: &ws.NATSPublisher{}}
 	msg.POST("/create/:room_id", msg_ctrl.MessageCreateRoute)
 
-	user_ctrl := &UserController{UserDB: app.GetUserDB()}
+	user_ctrl := &UserController{UserDB: app.GetUserDB(), PasswordHasher: lib.GetPasswordHasher()}
 	user.POST("/create", user_ctrl.UserCreateRoute)
 	user.POST("/login", user_ctrl.UserLoginRoute)
 }

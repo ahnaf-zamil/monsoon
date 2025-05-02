@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"time"
+
 	"ws_realtime_app/lib"
 	"ws_realtime_app/ws"
 
@@ -10,14 +11,15 @@ import (
 )
 
 type MessageController struct {
-	nats_pub ws.INATSPublisher
+	NATS_PUB ws.INATSPublisher
 }
 
 func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 	// Validating input
 	req := &lib.MessageCreateSchema{}
+	err := lib.ValidateRequestInput(c, req)
 
-	rs, err := lib.ValidateRequestInput(c, req)
+	rs := &lib.APIResponse{}
 	if err != nil {
 		lib.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
@@ -45,7 +47,7 @@ func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 
 	// Dispatch new message to NATS
 	// TODO: Dispatch message to Kafka logs for batch processing
-	ctrl.nats_pub.SendMsgNATS(payload)
+	ctrl.NATS_PUB.SendMsgNATS(payload)
 
 	c.JSON(http.StatusCreated, rs)
 }

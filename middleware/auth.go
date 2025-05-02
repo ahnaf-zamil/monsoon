@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+
 	"ws_realtime_app/lib"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,6 @@ import (
 func RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
-
 		rs := &lib.APIResponse{Err: true, Message: "Authorization token required"}
 		if token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)

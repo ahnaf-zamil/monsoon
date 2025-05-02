@@ -3,15 +3,16 @@ package controller
 import (
 	"net/http"
 	"strings"
+
 	"ws_realtime_app/db/app"
 	"ws_realtime_app/lib"
 
 	"github.com/gin-gonic/gin"
-	"github.com/matthewhartstonge/argon2"
 )
 
 type UserController struct {
-	UserDB app.IUserDB
+	UserDB         app.IUserDB
+	PasswordHasher lib.IPasswordHasher
 }
 
 func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
@@ -19,17 +20,11 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 
 	// Validating input
 	req := &lib.UserCreateSchema{}
-	rs, err := lib.ValidateRequestInput(c, req)
-	if err != nil {
-		return
-	}
+	err := lib.ValidateRequestInput(c, req)
 
-	argon := argon2.DefaultConfig()
-
-	user_id := lib.GenerateSnowflakeID()
-	pw_hash, err := argon.HashEncoded([]byte(req.Password))
+	rs := &lib.APIResponse{}
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		lib.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
 	}
 
@@ -49,6 +44,13 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 		return
 	}
 
+	user_id := lib.GenerateSnowflakeID()
+	pw_hash, err := ctrl.PasswordHasher.Hash(req.Password)
+	if err != nil {
+		lib.HandleServerError(c, rs, err)
+		return
+	}
+
 	// Creating the user here
 	err = ctrl.UserDB.CreateUser(c.Request.Context(), user_id.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pw_hash)
 	if err != nil {
@@ -62,7 +64,8 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	/* User login and authentication route */
 
 	req := &lib.UserLoginSchema{}
-	rs, err := lib.ValidateRequestInput(c, req)
+	err := lib.ValidateRequestInput(c, req)
+	rs := &lib.APIResponse{}
 	if err != nil {
 		lib.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
@@ -90,7 +93,7 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	}
 
 	// Verify password
-	ok, err := argon2.VerifyEncoded([]byte(req.Password), []byte(user.Password))
+	ok, err := ctrl.PasswordHasher.Verify(req.Password, user.Password)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
