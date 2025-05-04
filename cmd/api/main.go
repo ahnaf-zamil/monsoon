@@ -1,11 +1,9 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
 	"time"
-
 	"ws_realtime_app/controller"
 	"ws_realtime_app/db"
 	"ws_realtime_app/lib"
@@ -16,8 +14,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var PORT string = "8080"
-
 func main() {
 	// Load dotenv and config
 	if err := godotenv.Load(); err != nil {
@@ -25,16 +21,6 @@ func main() {
 	}
 
 	conf := lib.LoadConfig()
-
-	schemaFlagPtr := flag.Bool("generate_schema", false, "Generate DB schema from SQL files")
-	flag.Parse()
-
-	// Generate DB schema if the binary is run with this flag
-
-	if *schemaFlagPtr {
-		db.CreateAppDBSchemas(conf)
-		return
-	}
 
 	// Initialize snowflake ID generator
 	lib.InitSnowflakeNode()
@@ -74,9 +60,9 @@ func main() {
 	controller.InitControllers(r)
 
 	// Here we go
-	log.Println("Server started on port", PORT)
+	log.Println("Server started on port", conf.Port)
 
-	err = http.ListenAndServe("0.0.0.0:"+PORT, r)
+	err = http.ListenAndServe("0.0.0.0:"+conf.Port, r)
 	if err != nil {
 		log.Println("Error starting server:", err)
 	}

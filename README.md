@@ -18,12 +18,12 @@
 
 Start server
 ```
-go run .
+go run cmd/api/main.go
 ```
 
 Generate DB schema (will extend for migration later)
 ```
-go run . -generate_schema
+go run cmd/migrate/main.go
 ```
 
 Run tests

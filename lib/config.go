@@ -9,6 +9,7 @@ type Config struct {
 	AppDBPostgresURL     string
 	MessageDBPostgresURL string
 	SnowflakeNodeId      string
+	Port                 string
 }
 
 var config *Config
@@ -21,6 +22,7 @@ func LoadConfig() *Config {
 		AppDBPostgresURL:     os.Getenv("APP_DB_POSTGRES_URL"),
 		MessageDBPostgresURL: os.Getenv("MESSAGE_DB_POSTGRES_URL"),
 		SnowflakeNodeId:      os.Getenv("SNOWFLAKE_NODE_ID"),
+		Port:                 os.Getenv("PORT"),
 	}
 	return config
 }
