@@ -26,6 +26,11 @@ Generate DB schema (will extend for migration later)
 go run cmd/migrate/main.go
 ```
 
+Regenerate Swagger docs
+```
+swag init --dir cmd/api,controller --pd 
+```
+
 Run tests
 ```
 go test ./tests/*** -v

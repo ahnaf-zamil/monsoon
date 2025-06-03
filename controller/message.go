@@ -3,7 +3,6 @@ package controller
 import (
 	"net/http"
 	"time"
-
 	"ws_realtime_app/lib"
 	"ws_realtime_app/ws"
 
@@ -14,6 +13,17 @@ type MessageController struct {
 	NATS_PUB ws.INATSPublisher
 }
 
+// @Summary      Create Message
+// @Description  Post a message
+// @Tags         messages
+// @Accept       json
+// @Produce      json
+// @Param        roomId   path      int  true  "Room ID"
+// @Param        request  body     	lib.MessageCreateSchema  true  "Message data"
+// @Success      201      {object}  lib.APIResponse
+// @Failure      401      {object}  lib.APIResponse
+// @Router       /message/create/{roomId} [post]
+// @Security    BearerAuth
 func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 	// Validating input
 	req := &lib.MessageCreateSchema{}

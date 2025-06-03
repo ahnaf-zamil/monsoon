@@ -3,7 +3,6 @@ package controller
 import (
 	"net/http"
 	"strings"
-
 	"ws_realtime_app/db/app"
 	"ws_realtime_app/lib"
 
@@ -15,6 +14,15 @@ type UserController struct {
 	PasswordHasher lib.IPasswordHasher
 }
 
+// @Summary      Create a new user
+// @Description  Register a new user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request  body     	lib.UserCreateSchema  true  "User info"
+// @Success      201      {object}  lib.APIResponse
+// @Failure      400      {object}  lib.APIResponse
+// @Router       /user/create [post]
 func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 	/* User creation/registration route */
 
@@ -60,6 +68,15 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 	c.JSON(http.StatusCreated, rs)
 }
 
+// @Summary      Login User
+// @Description  User authentication route
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request  body     	lib.UserLoginSchema  true  "User credentials"
+// @Success      200      {object}  lib.APIResponse
+// @Failure      401      {object}  lib.APIResponse
+// @Router       /user/login [post]
 func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	/* User login and authentication route */
 

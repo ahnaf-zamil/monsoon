@@ -1,0 +1,153 @@
+basePath: /api
+definitions:
+  lib.APIResponse:
+    properties:
+      data: {}
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  lib.MessageCreateSchema:
+    properties:
+      content:
+        example: hunter2
+        type: string
+    required:
+    - content
+    type: object
+  lib.UserCreateSchema:
+    properties:
+      display_name:
+        example: John Doe
+        type: string
+      email:
+        example: john@doe.com
+        type: string
+      password:
+        example: ilovejanedoe
+        minLength: 8
+        type: string
+      username:
+        example: johndoe1
+        maxLength: 15
+        minLength: 3
+        type: string
+    required:
+    - display_name
+    - email
+    - password
+    - username
+    type: object
+  lib.UserLoginSchema:
+    properties:
+      email:
+        example: john@doe.com
+        type: string
+      password:
+        example: ilovejanedoe
+        type: string
+    required:
+    - email
+    - password
+    type: object
+info:
+  contact:
+    email: ahnaf@ahnafzamil.com
+    name: Author
+    url: https://ahnafzamil.com/contact
+  description: REST API and WebSocket server
+  title: WS_RT_APP API
+  version: 0.0.1
+paths:
+  /message/create/{roomId}:
+    post:
+      consumes:
+      - application/json
+      description: Post a message
+      parameters:
+      - description: Room ID
+        in: path
+        name: roomId
+        required: true
+        type: integer
+      - description: Message data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/lib.MessageCreateSchema'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/lib.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/lib.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Message
+      tags:
+      - messages
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: User info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/lib.UserCreateSchema'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/lib.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/lib.APIResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: User authentication route
+      parameters:
+      - description: User credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/lib.UserLoginSchema'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/lib.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/lib.APIResponse'
+      summary: Login User
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

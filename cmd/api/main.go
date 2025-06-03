@@ -12,8 +12,25 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	swaggerfiles "github.com/swaggo/files"     // swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
+
+	_ "ws_realtime_app/docs" // Loading swagger docs
 )
 
+//	@title			WS_RT_APP API
+//	@version		0.0.1
+//	@description REST API and WebSocket server
+
+//	@contact.name	Author
+//	@contact.url	https://ahnafzamil.com/contact
+//	@contact.email	ahnaf@ahnafzamil.com
+// 	@BasePath /api
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	// Load dotenv and config
 	if err := godotenv.Load(); err != nil {
@@ -57,6 +74,7 @@ func main() {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	controller.InitControllers(r)
 
 	// Here we go
