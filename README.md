@@ -1,6 +1,6 @@
 <img src="./client/src/static/img/monsoon_logo.png"  width="400">
 
-[![Go CI](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/ci.yml/badge.svg)](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/ci.yml)
+[![Server CI](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/server-ci.yml/badge.svg)](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/server-ci.yml)
 
 ## Technology
 
