@@ -19,7 +19,7 @@ func InitControllers(r *gin.Engine) {
 	msg_ctrl := &MessageController{NATS_PUB: &ws.NATSPublisher{}}
 	msg.POST("/create/:room_id", msg_ctrl.MessageCreateRoute)
 
-	user_ctrl := &UserController{UserDB: app.GetUserDB(), PasswordHasher: lib.GetPasswordHasher()}
+	user_ctrl := &UserController{UserDB: app.GetUserDB(), PasswordHasher: lib.GetPasswordHasher(), TokenHelper: lib.GetJWTTokenHelper()}
 	user.POST("/create", user_ctrl.UserCreateRoute)
 	user.POST("/login", user_ctrl.UserLoginRoute)
 }

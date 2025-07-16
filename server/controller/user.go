@@ -4,6 +4,7 @@ import (
 	"monsoon/db/app"
 	"monsoon/lib"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ import (
 type UserController struct {
 	UserDB         app.IUserDB
 	PasswordHasher lib.IPasswordHasher
+	TokenHelper    lib.IJWTTokenHelper
 }
 
 // @Summary      Create a new user
@@ -52,15 +54,22 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 		return
 	}
 
-	user_id := lib.GenerateSnowflakeID()
-	pw_hash, err := ctrl.PasswordHasher.Hash(req.Password)
+	userId := lib.GenerateSnowflakeID()
+	pwHash, err := ctrl.PasswordHasher.Hash(req.Password)
+	if err != nil {
+		lib.HandleServerError(c, rs, err)
+		return
+	}
+
+	// Refresh token expires after 7 days, gets stored in DB
+	refreshToken, err := ctrl.TokenHelper.CreateNewToken(lib.RandomBase16String(32), 86400*7)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
 	}
 
 	// Creating the user here
-	err = ctrl.UserDB.CreateUser(c.Request.Context(), user_id.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pw_hash)
+	err = ctrl.UserDB.CreateUser(c.Request.Context(), userId.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pwHash, refreshToken)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
@@ -124,7 +133,20 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 
 	rs.Data = user
 
-	// TODO: Implement JWT token for auth persistence
+	// Update new refresh token in DB upon login
+	refreshToken, err := ctrl.TokenHelper.CreateNewToken(lib.RandomBase16String(32), 86400*7)
+	if err != nil {
+		lib.HandleServerError(c, rs, err)
+		return
+	}
+
+	values := map[lib.UserColumn]string{
+		lib.ColUserRefreshToken: refreshToken,
+	}
+	id, _ := strconv.ParseInt(user.ID, 10, 64)
+	ctrl.UserDB.UpdateUserTableById(c, id, lib.TableAuth, values)
+
+	// TODO: Set refresh token in cookie
 
 	c.JSON(http.StatusOK, rs)
 }

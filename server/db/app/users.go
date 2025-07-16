@@ -19,8 +19,9 @@ type UserDB struct {
 
 // Will be stubbed during testing
 type IUserDB interface {
-	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error
+	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, refreshToken string) error
 	GetUserByAnyField(ctx context.Context, fields map[lib.UserColumn]any) (*lib.UserModel, error)
+	UpdateUserTableById(ctx context.Context, id int64, table string, values map[lib.UserColumn]string) error
 }
 
 func GetUserDB() *UserDB {
@@ -28,7 +29,7 @@ func GetUserDB() *UserDB {
 	return user_db
 }
 
-func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error {
+func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, refreshToken string) error {
 	/* Service function to create a user */
 
 	// TODO: Separate DB functionality like insert, delete, etc. into separate functions
@@ -50,9 +51,8 @@ func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName
 		return err
 	}
 
-	refresh_token := "blah blah"
 	// Insert user auth data into the auth table
-	err = insertUsersAuth(tx, ctx, id, email, string(password), refresh_token)
+	err = insertUsersAuth(tx, ctx, id, email, string(password), refreshToken)
 	if err != nil {
 		return err
 	}
@@ -106,6 +106,37 @@ func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[lib.UserColum
 		// Else, just return user
 		return &user, nil
 	}
+}
+
+func (u *UserDB) UpdateUserTableById(ctx context.Context, id int64, table string, values map[lib.UserColumn]string) error {
+
+	tx, err := u.AppDB.DBPool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
+			log.Println("TX rollback error:", err)
+		}
+	}()
+
+	query_format := "UPDATE %s SET %s WHERE %s.id = $%d"
+	query := fmt.Sprintf(query_format, table, lib.GenerateDBUpdateFields(values), table, len(values)+1)
+	value_arr := []any{}
+	for _, v := range values {
+		value_arr = append(value_arr, v)
+	}
+	_, err = tx.Exec(ctx, query, append(value_arr, id)...)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		log.Println("TX commit error:", err)
+	}
+
+	return err
 }
 
 func insertUser(tx pgx.Tx, ctx context.Context, id int64, username, display_name string, created_at int64, updated_at int64) error {

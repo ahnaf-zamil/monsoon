@@ -11,7 +11,7 @@ import (
 	"monsoon/mocks"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/mock/gomock"
+	"github.com/golang/mock/gomock"
 )
 
 func TestMessageCreateRoute(t *testing.T) {

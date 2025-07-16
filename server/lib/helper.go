@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"sync"
 
@@ -73,6 +74,21 @@ func GenerateDBQueryFields(cols []UserColumn) string {
 	return selected_columns
 }
 
+func GenerateDBUpdateFields(values map[UserColumn]string) string {
+	/* Generates UPDATE fields using provided columns */
+	update_fields := ""
+	i := 1
+	for col := range values {
+		format := "%s = $%d, "
+		if i == len(values) {
+			format = "%s = $%d "
+		}
+		update_fields = update_fields + fmt.Sprintf(format, col.Column, i)
+		i++
+	}
+	return update_fields
+}
+
 func GenerateDBOrFields(fields []UserColumn) string {
 	/* Generates the OR conditions for given columns */
 	or_fields := ""
@@ -87,4 +103,11 @@ func GenerateDBOrFields(fields []UserColumn) string {
 	}
 
 	return or_fields
+}
+
+func RandomBase16String(l int) string {
+	buff := make([]byte, int(math.Ceil(float64(l)/2)))
+	rand.Read(buff)
+	str := hex.EncodeToString(buff)
+	return str[:l] // strip 1 extra character we get from odd length results
 }

@@ -14,6 +14,7 @@ type Config struct {
 	SnowflakeNodeId      string
 	Port                 string
 	IsDev                bool
+	JWTSecret            string
 }
 
 var config *Config
@@ -33,6 +34,7 @@ func LoadConfig() *Config {
 		SnowflakeNodeId:      os.Getenv("SNOWFLAKE_NODE_ID"),
 		Port:                 os.Getenv("PORT"),
 		IsDev:                IsDev,
+		JWTSecret:            os.Getenv("JWT_SECRET"),
 	}
 	return config
 }

@@ -12,7 +12,7 @@ import (
 	"monsoon/mocks"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/mock/gomock"
+	"github.com/golang/mock/gomock"
 )
 
 func TestUserCreateRoute(t *testing.T) {
@@ -22,7 +22,7 @@ func TestUserCreateRoute(t *testing.T) {
 	tests := []struct {
 		name           string
 		requestBody    string
-		setupMocks     func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher)
+		setupMocks     func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper)
 		expectedStatus int
 	}{
 		{
@@ -31,7 +31,7 @@ func TestUserCreateRoute(t *testing.T) {
 				"display_name": "User 1",
 				"email": "user1@example.com",
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -43,7 +43,7 @@ func TestUserCreateRoute(t *testing.T) {
 				"email": "user1@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -55,7 +55,7 @@ func TestUserCreateRoute(t *testing.T) {
 				"email": "user1example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -67,7 +67,7 @@ func TestUserCreateRoute(t *testing.T) {
 				"email": "user1@example.com",
 				"password": "pas"
 			}`, // Too short password
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -79,10 +79,11 @@ func TestUserCreateRoute(t *testing.T) {
 				"email": "user1@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(nil, nil)
 				hasher.EXPECT().Hash(gomock.Any()).Return([]byte{}, nil)
-				db.EXPECT().CreateUser(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				token.EXPECT().CreateNewToken(gomock.Any(), gomock.Any())
+				db.EXPECT().CreateUser(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 			expectedStatus: http.StatusCreated,
 		},
@@ -94,7 +95,7 @@ func TestUserCreateRoute(t *testing.T) {
 				"email": "user1@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).
 					Return(&lib.UserModel{Username: "user1"}, nil)
 			},
@@ -108,7 +109,7 @@ func TestUserCreateRoute(t *testing.T) {
 				"email": "fail@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).
 					Return(nil, fmt.Errorf("db failed"))
 			},
@@ -122,7 +123,7 @@ func TestUserCreateRoute(t *testing.T) {
 				"email": "user1@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(nil, nil)
 				hasher.EXPECT().Hash(gomock.Any()).Return(nil, fmt.Errorf("hasher error"))
 			},
@@ -134,11 +135,12 @@ func TestUserCreateRoute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockUserDB := mocks.NewMockIUserDB(ctrl)
 			mockPasswordHasher := mocks.NewMockIPasswordHasher(ctrl)
+			mockTokenHelper := mocks.NewMockIJWTTokenHelper(ctrl)
 			if tt.setupMocks != nil {
-				tt.setupMocks(mockUserDB, mockPasswordHasher)
+				tt.setupMocks(mockUserDB, mockPasswordHasher, mockTokenHelper)
 			}
 
-			userController := &controller.UserController{UserDB: mockUserDB, PasswordHasher: mockPasswordHasher}
+			userController := &controller.UserController{UserDB: mockUserDB, PasswordHasher: mockPasswordHasher, TokenHelper: mockTokenHelper}
 			gin.SetMode(gin.TestMode)
 			r := gin.Default()
 			r.POST("/user/create", userController.UserCreateRoute)
@@ -164,7 +166,7 @@ func TestUserLoginRoute(t *testing.T) {
 	tests := []struct {
 		name           string
 		requestBody    string
-		setupMocks     func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher)
+		setupMocks     func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper)
 		expectedStatus int
 	}{
 		{
@@ -173,7 +175,7 @@ func TestUserLoginRoute(t *testing.T) {
 				"email": "user1example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
@@ -185,9 +187,11 @@ func TestUserLoginRoute(t *testing.T) {
 			  "password": "password123"
 			}
 			`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&lib.UserModel{Username: "user1"}, nil)
 				hasher.EXPECT().Verify(gomock.Any(), gomock.Any()).Return(true, nil)
+				token.EXPECT().CreateNewToken(gomock.Any(), gomock.Any())
+				db.EXPECT().UpdateUserTableById(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
 			expectedStatus: http.StatusOK,
 		},
@@ -199,7 +203,7 @@ func TestUserLoginRoute(t *testing.T) {
 			  "password": "wrongpassword"
 			}
 			`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&lib.UserModel{Username: "user1"}, nil)
 				hasher.EXPECT().Verify(gomock.Any(), gomock.Any()).Return(false, nil)
 			},
@@ -211,7 +215,7 @@ func TestUserLoginRoute(t *testing.T) {
 				"email": "user1@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).
 					Return(nil, nil)
 			},
@@ -223,7 +227,7 @@ func TestUserLoginRoute(t *testing.T) {
 				"email": "fail@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).
 					Return(nil, fmt.Errorf("db failed"))
 			},
@@ -235,7 +239,7 @@ func TestUserLoginRoute(t *testing.T) {
 				"email": "user1@example.com",
 				"password": "password123"
 			}`,
-			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher) {
+			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&lib.UserModel{Username: "user1"}, nil)
 				hasher.EXPECT().Verify(gomock.Any(), gomock.Any()).Return(false, fmt.Errorf("hasher error"))
 			},
@@ -247,12 +251,12 @@ func TestUserLoginRoute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockUserDB := mocks.NewMockIUserDB(ctrl)
 			mockPasswordHasher := mocks.NewMockIPasswordHasher(ctrl)
-
+			mockTokenHelper := mocks.NewMockIJWTTokenHelper(ctrl)
 			if tt.setupMocks != nil {
-				tt.setupMocks(mockUserDB, mockPasswordHasher)
+				tt.setupMocks(mockUserDB, mockPasswordHasher, mockTokenHelper)
 			}
 
-			userController := &controller.UserController{UserDB: mockUserDB, PasswordHasher: mockPasswordHasher}
+			userController := &controller.UserController{UserDB: mockUserDB, PasswordHasher: mockPasswordHasher, TokenHelper: mockTokenHelper}
 
 			gin.SetMode(gin.TestMode)
 			r := gin.Default()
