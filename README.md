@@ -1,4 +1,4 @@
-# Real-Time Websocket Chat App
+<img src="./client/src/static/img/monsoon_logo.png"  width="400">
 
 [![Go CI](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/ci.yml/badge.svg)](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/ci.yml)
 
@@ -37,8 +37,6 @@ go test ./tests/*** -v
 ```
 
 ## To Do
-- Integrate Kafka for streaming new messages to batch processors (This is to prevent bombarding the DB with new messages)
-- Create background workers or worker services to batch write new messages to PostgreSQL database
 - Postgres DB setup for authentication and data store
 - Use separate databases for storing application data (users, rooms) and messages
 - Implement message bucketing and partitons
