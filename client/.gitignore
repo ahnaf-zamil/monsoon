@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # This will be created by "yarn build:css" command
-tailwind.css
+index.css
