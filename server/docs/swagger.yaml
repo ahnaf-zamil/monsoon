@@ -56,8 +56,8 @@ info:
     email: ahnaf@ahnafzamil.com
     name: Author
     url: https://ahnafzamil.com/contact
-  description: REST API and WebSocket server
-  title: WS_RT_APP API
+  description: REST API and WebSocket server for Monsoon
+  title: Monsoon API
   version: 0.0.1
 paths:
   /message/create/{roomId}:

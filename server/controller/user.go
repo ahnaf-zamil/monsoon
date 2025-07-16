@@ -62,7 +62,8 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 	}
 
 	// Refresh token expires after 7 days, gets stored in DB
-	refreshToken, err := ctrl.TokenHelper.CreateNewToken(lib.RandomBase16String(32), 86400*7)
+	rnd_code, _ := lib.RandomBase16String(32)
+	refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
@@ -134,7 +135,8 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	rs.Data = user
 
 	// Update new refresh token in DB upon login
-	refreshToken, err := ctrl.TokenHelper.CreateNewToken(lib.RandomBase16String(32), 86400*7)
+	rnd_code, _ := lib.RandomBase16String(32)
+	refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
@@ -144,7 +146,11 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 		lib.ColUserRefreshToken: refreshToken,
 	}
 	id, _ := strconv.ParseInt(user.ID, 10, 64)
-	ctrl.UserDB.UpdateUserTableById(c, id, lib.TableAuth, values)
+	err = ctrl.UserDB.UpdateUserTableById(c, id, lib.TableAuth, values)
+	if err != nil {
+		lib.HandleServerError(c, rs, err)
+		return
+	}
 
 	// TODO: Set refresh token in cookie
 

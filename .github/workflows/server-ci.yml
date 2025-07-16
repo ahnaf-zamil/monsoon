@@ -1,21 +1,25 @@
-name: Go CI
+name: Server CI
 
 on:
   push:
     branches:
       - master
     paths:
-      - '**.go'
+      - 'server/**.go'
   pull_request:
     branches:
       - master
     paths:
-      - '**.go'
+      - 'server/**.go'
 
 jobs:
   lint:
     name: Linter
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./server
 
     steps:
       - name: Checkout code
@@ -36,6 +40,10 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     needs: lint 
+
+    defaults:
+      run:
+        working-directory: ./server
 
     steps:
       - name: Checkout code

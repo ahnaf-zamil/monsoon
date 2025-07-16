@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "REST API and WebSocket server",
-        "title": "WS_RT_APP API",
+        "description": "REST API and WebSocket server for Monsoon",
+        "title": "Monsoon API",
         "contact": {
             "name": "Author",
             "url": "https://ahnafzamil.com/contact",

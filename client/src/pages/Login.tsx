@@ -4,31 +4,31 @@ import { useContext, useEffect, useState } from "react";
 import { isEmptyString } from "../util";
 import { loginUser } from "../api/auth";
 import { isAxiosError } from "axios";
-import { BiUser } from "react-icons/bi";
 import { PiPasswordBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { FiMail } from "react-icons/fi";
 
 export const Login: React.FC = () => {
-    const navigate = useNavigate();
-    const currentUser = useContext(AuthContext);
+  const navigate = useNavigate();
+  const currentUser = useContext(AuthContext);
 
-  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (currentUser) {
-            navigate("/");
-        }
-    }, [currentUser])
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/");
+    }
+  }, [currentUser]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!isEmptyString(username) && !isEmptyString(password)) {
+    if (!isEmptyString(email) && !isEmptyString(password)) {
       // Login user here
-      const resp = await loginUser(username, password);
+      const resp = await loginUser(email, password);
       if (!isAxiosError(resp)) {
         navigate("/");
       } else {
@@ -63,19 +63,19 @@ export const Login: React.FC = () => {
           )}
           <div className="grid gap-5">
             <div className="grid gap-1">
-              <label htmlFor="username" className="sr-only">
-                Username
+              <label htmlFor="email" className="sr-only">
+                Email
               </label>
               <div className="flex w-full rounded-md dark:bg-neutral-800 items-center justify-center">
-                <BiUser className="text-xl mx-2 text-primary-text" />
+                <FiMail className="text-xl mx-2 text-primary-text" />
                 <input
-                  type="text"
+                  type="email"
                   className="outline-none rounded-md flex-grow pr-4 py-2 placeholder:text-neutral-600 dark:placeholder:text-neutral-500 dark:text-white"
-                  placeholder="Username"
-                  id="username"
+                  placeholder="Email"
+                  id="email"
                   required={true}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>

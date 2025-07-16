@@ -105,9 +105,9 @@ func GenerateDBOrFields(fields []UserColumn) string {
 	return or_fields
 }
 
-func RandomBase16String(l int) string {
+func RandomBase16String(l int) (string, error) {
 	buff := make([]byte, int(math.Ceil(float64(l)/2)))
-	rand.Read(buff)
+	_, err := rand.Read(buff)
 	str := hex.EncodeToString(buff)
-	return str[:l] // strip 1 extra character we get from odd length results
+	return str[:l], err // strip 1 extra character we get from odd length results
 }

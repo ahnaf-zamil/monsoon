@@ -1,10 +1,13 @@
 import type { IUser } from "../types";
 import { apiClient } from "./api";
 
-export const loginUser = async (username: string, password: string): Promise<any> => {
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<any> => {
   try {
-    const response = await apiClient.post("/auth/login", {
-      username,
+    const response = await apiClient.post("/user/login", {
+      email,
       password,
     });
     return response.data;
@@ -13,13 +16,12 @@ export const loginUser = async (username: string, password: string): Promise<any
   }
 };
 
-
 export const getAuthenticatedUser = async (): Promise<IUser | null> => {
-    try {
-        const response = await apiClient.get("/auth/me");
-        return response.data;
-    }
-    catch (error) {
-        return null;
-    }
-}
+  // TODO: Implement on backend
+  try {
+    const response = await apiClient.get("/user/@me");
+    return response.data;
+  } catch (error) {
+    return null;
+  }
+};

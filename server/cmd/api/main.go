@@ -19,9 +19,9 @@ import (
 	_ "monsoon/docs" // Loading swagger docs
 )
 
-//	@title			WS_RT_APP API
+//	@title			Monsoon API
 //	@version		0.0.1
-//	@description REST API and WebSocket server
+//	@description REST API and WebSocket server for Monsoon
 
 //	@contact.name	Author
 //	@contact.url	https://ahnafzamil.com/contact

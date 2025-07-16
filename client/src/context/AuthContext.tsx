@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 import type { IUser } from "../types";
 import { getAuthenticatedUser } from "../api/auth";
 import { useLocation } from "react-router-dom";
