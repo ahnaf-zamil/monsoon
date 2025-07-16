@@ -36,6 +36,11 @@ Run tests
 go test ./tests/*** -v
 ```
 
+Generate mocks
+```
+mockgen -source=[file] -destination=mocks/[destination file] -package=mocks
+```
+
 ## To Do
 - Postgres DB setup for authentication and data store
 - Use separate databases for storing application data (users, rooms) and messages
