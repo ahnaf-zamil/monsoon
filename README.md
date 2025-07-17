@@ -70,3 +70,7 @@ API Docs at `http://localhost:9000/swagger/index.html`
 - Implement message bucketing and partitons
 - Set up JWT for user auth state
 - Write unit tests for DB functions and room states
+
+## License
+
+This project is licensed under the AGPL-3.0 License - see the [LICENSE](./LICENSE) file for details.
