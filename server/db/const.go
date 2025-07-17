@@ -1,4 +1,4 @@
-package lib
+package db
 
 /* Holds DB constants such as tables and columns for dynamic query generation
 

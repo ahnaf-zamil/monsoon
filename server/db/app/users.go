@@ -20,8 +20,8 @@ type UserDB struct {
 // Will be stubbed during testing
 type IUserDB interface {
 	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, refreshToken string) error
-	GetUserByAnyField(ctx context.Context, fields map[lib.UserColumn]any) (*lib.UserModel, error)
-	UpdateUserTableById(ctx context.Context, id int64, table string, values map[lib.UserColumn]string) error
+	GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*lib.UserModel, error)
+	UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error
 }
 
 func GetUserDB() *UserDB {
@@ -64,12 +64,12 @@ func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName
 	return nil
 }
 
-func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[lib.UserColumn]any) (*lib.UserModel, error) {
+func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*lib.UserModel, error) {
 	/* This function queries user based on OR query for multiple fields */
 	// TODO:
 
 	// Separate the fields and respective values into properly sequenced slices for later use in query generation
-	field_arr := []lib.UserColumn{}
+	field_arr := []db.UserColumn{}
 	value_arr := []any{}
 	for k, v := range fields {
 		field_arr = append(field_arr, k)
@@ -77,20 +77,20 @@ func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[lib.UserColum
 	}
 
 	// Generate the "OR" conditions using given fields
-	or_fields := lib.GenerateDBOrFields(field_arr)
+	or_fields := db.GenerateDBOrFields(field_arr)
 
 	// Generate the SELECT columns
-	cols := []lib.UserColumn{lib.ColUserID, lib.ColUserUsername, lib.ColUserDisplayName, lib.ColUserCreatedAt, lib.ColUserEmail, lib.ColUserPassword, lib.ColUserRefreshToken}
-	selected_columns := lib.GenerateDBQueryFields(cols)
+	cols := []db.UserColumn{db.ColUserID, db.ColUserUsername, db.ColUserDisplayName, db.ColUserCreatedAt, db.ColUserEmail, db.ColUserPassword, db.ColUserRefreshToken}
+	selected_columns := db.GenerateDBQueryFields(cols)
 
 	query := fmt.Sprintf("SELECT %s FROM %s INNER JOIN %s ON %s.%s=%s.%s WHERE ",
 		selected_columns,
-		lib.TableUsers,
-		lib.TableAuth,
-		lib.ColUserID.Table,
-		lib.ColUserID.Column,
-		lib.ColUserEmail.Table,
-		lib.ColUserID.Column)
+		db.TableUsers,
+		db.TableAuth,
+		db.ColUserID.Table,
+		db.ColUserID.Column,
+		db.ColUserEmail.Table,
+		db.ColUserID.Column)
 	query = query + or_fields
 	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
 	row := u.AppDB.DBPool.QueryRow(ctx, query, value_arr...)
@@ -108,8 +108,7 @@ func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[lib.UserColum
 	}
 }
 
-func (u *UserDB) UpdateUserTableById(ctx context.Context, id int64, table string, values map[lib.UserColumn]string) error {
-
+func (u *UserDB) UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error {
 	tx, err := u.AppDB.DBPool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
@@ -121,7 +120,7 @@ func (u *UserDB) UpdateUserTableById(ctx context.Context, id int64, table string
 	}()
 
 	query_format := "UPDATE %s SET %s WHERE %s.id = $%d"
-	query := fmt.Sprintf(query_format, table, lib.GenerateDBUpdateFields(values), table, len(values)+1)
+	query := fmt.Sprintf(query_format, table, db.GenerateDBUpdateFields(values), table, len(values)+1)
 	value_arr := []any{}
 	for _, v := range values {
 		value_arr = append(value_arr, v)

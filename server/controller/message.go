@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"monsoon/lib"
-	"monsoon/ws"
 	"net/http"
 	"time"
+
+	"monsoon/lib"
+	"monsoon/ws"
 
 	"github.com/gin-gonic/gin"
 )

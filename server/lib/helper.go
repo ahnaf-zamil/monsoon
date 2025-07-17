@@ -57,57 +57,42 @@ func HandleServerError(c *gin.Context, rs *APIResponse, err error) {
 	log.Println(err)
 }
 
-/* DB-sided */
-func GenerateDBQueryFields(cols []UserColumn) string {
-	/* Generates SELECT query fields using provided columns */
-
-	selected_columns := ""
-
-	for i, c := range cols {
-		if i == len(cols)-1 {
-			// For last column, do not include comma and space
-			selected_columns = selected_columns + fmt.Sprintf("%s.%s", c.Table, c.Column)
-		} else {
-			selected_columns = selected_columns + fmt.Sprintf("%s.%s, ", c.Table, c.Column)
-		}
-	}
-	return selected_columns
-}
-
-func GenerateDBUpdateFields(values map[UserColumn]string) string {
-	/* Generates UPDATE fields using provided columns */
-	update_fields := ""
-	i := 1
-	for col := range values {
-		format := "%s = $%d, "
-		if i == len(values) {
-			format = "%s = $%d "
-		}
-		update_fields = update_fields + fmt.Sprintf(format, col.Column, i)
-		i++
-	}
-	return update_fields
-}
-
-func GenerateDBOrFields(fields []UserColumn) string {
-	/* Generates the OR conditions for given columns */
-	or_fields := ""
-
-	for i, col := range fields {
-		if i == len(fields)-1 {
-			// For last column, do not include OR and space
-			or_fields = or_fields + fmt.Sprintf("%s.%s=$%d", col.Table, col.Column, i+1)
-		} else {
-			or_fields = or_fields + fmt.Sprintf("%s.%s=$%d OR ", col.Table, col.Column, i+1)
-		}
-	}
-
-	return or_fields
-}
-
 func RandomBase16String(l int) (string, error) {
 	buff := make([]byte, int(math.Ceil(float64(l)/2)))
 	_, err := rand.Read(buff)
 	str := hex.EncodeToString(buff)
 	return str[:l], err // strip 1 extra character we get from odd length results
+}
+
+func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
+	/* For dev environments, setting SameSite = lax since no HTTPS
+	Chrome will not send this cookie on API requests, so use Firefox for development
+
+	On prod, assume HTTPS and set SameSite = none with Secure
+	*/
+
+	var sameSite http.SameSite
+	var secure bool
+	domain := c.Request.Host
+
+	if config.IsDev {
+
+		sameSite = http.SameSiteLaxMode
+		secure = false
+		domain = "localhost"
+	} else {
+		sameSite = http.SameSiteNoneMode
+		secure = true
+	}
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "rt",
+		Value:    refreshToken,
+		Path:     "/",
+		Domain:   domain,
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
 }

@@ -2,12 +2,13 @@ package main
 
 import (
 	"log"
+	"net/http"
+	"time"
+
 	"monsoon/controller"
 	"monsoon/db"
 	"monsoon/lib"
 	"monsoon/ws"
-	"net/http"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -69,13 +70,10 @@ func main() {
 	}
 	r.GET("/ws", ws.WsHandler)
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{"http://localhost:5173", "https://monsoon.ahnafzamil.com"},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return true
-		},
-		MaxAge: 12 * time.Hour,
+		MaxAge:           24 * 7 * time.Hour,
 	}))
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	controller.InitControllers(r)

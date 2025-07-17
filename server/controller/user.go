@@ -1,11 +1,13 @@
 package controller
 
 import (
-	"monsoon/db/app"
-	"monsoon/lib"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"monsoon/db"
+	"monsoon/db/app"
+	"monsoon/lib"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,9 +41,9 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 	}
 
 	// Checks if another user already exists with EITHER the same username OR same email
-	fields := map[lib.UserColumn]any{
-		lib.ColUserEmail:    req.Email,
-		lib.ColUserUsername: req.Username,
+	fields := map[db.UserColumn]any{
+		db.ColUserEmail:    req.Email,
+		db.ColUserUsername: req.Username,
 	}
 	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
@@ -99,8 +101,8 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	}
 
 	// Check for user's existence
-	fields := map[lib.UserColumn]any{
-		lib.ColUserEmail: req.Email,
+	fields := map[db.UserColumn]any{
+		db.ColUserEmail: req.Email,
 	}
 	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
@@ -142,17 +144,17 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 		return
 	}
 
-	values := map[lib.UserColumn]string{
-		lib.ColUserRefreshToken: refreshToken,
+	values := map[db.UserColumn]string{
+		db.ColUserRefreshToken: refreshToken,
 	}
 	id, _ := strconv.ParseInt(user.ID, 10, 64)
-	err = ctrl.UserDB.UpdateUserTableById(c, id, lib.TableAuth, values)
+	err = ctrl.UserDB.UpdateUserTableById(c, id, db.TableAuth, values)
 	if err != nil {
 		lib.HandleServerError(c, rs, err)
 		return
 	}
 
 	// TODO: Set refresh token in cookie
-
+	lib.SetRefreshTokenCookie(c, refreshToken)
 	c.JSON(http.StatusOK, rs)
 }
