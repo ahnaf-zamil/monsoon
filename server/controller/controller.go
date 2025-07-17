@@ -30,5 +30,5 @@ func InitControllers(r *gin.Engine) {
 	user.POST("/create", user_ctrl.UserCreateRoute)
 	user.POST("/login", user_ctrl.UserLoginRoute)
 	user.POST("/token", rfTokenMiddleware, user_ctrl.UserGetAccessToken)
-	user.GET("/@me", authMiddleware, user_ctrl.UserGetCurrent)
+	user.GET("/me", authMiddleware, user_ctrl.UserGetCurrent)
 }

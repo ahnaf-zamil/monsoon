@@ -27,7 +27,7 @@ type UserController struct {
 // @Produce      json
 // @Param        request  body     	api.UserCreateSchema  true  "User info"
 // @Success      201      {object}  api.APIResponse
-// @Failure      400      {object}  api.APIResponse
+// @Failure      400,409      {object}  api.APIResponse
 // @Router       /user/create [post]
 func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 
@@ -88,7 +88,7 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 // @Produce      json
 // @Param        request  body     	api.UserLoginSchema  true  "User credentials"
 // @Success      200      {object}  api.APIResponse
-// @Failure      401      {object}  api.APIResponse
+// @Failure      400,401      {object}  api.APIResponse
 // @Router       /user/login [post]
 func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	/* User login and authentication route */
@@ -199,7 +199,7 @@ func (ctrl *UserController) UserGetAccessToken(c *gin.Context) {
 // @Produce      json
 // @Success      200      {object}  api.APIResponse
 // @Failure      401      {object}  api.APIResponse
-// @Router       /user/@me [post]
+// @Router       /user/me [post]
 func (ctrl *UserController) UserGetCurrent(c *gin.Context) {
 	rs := &api.APIResponse{}
 	user, ok := util.GetCurrentUser(c)

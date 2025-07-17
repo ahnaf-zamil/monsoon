@@ -1,6 +1,7 @@
-<img src="./client/src/static/img/monsoon_logo.png"  width="400">
+<img src="./client/src/static/img/monsoon_logo.png"  width="400" style="margin-bottom: 20px">
 
 [![Server CI](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/server-ci.yml/badge.svg)](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/server-ci.yml)
+![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)
 
 ## Technology
 
@@ -60,17 +61,7 @@ Regenerate Swagger docs
 swag init --dir cmd/api,controller --pd
 ```
 
-Run tests
-
-```
-go test ./tests/*** -v
-```
-
-Generate mocks
-
-```
-mockgen -source=[file] -destination=mocks/[destination file] -package=mocks
-```
+API Docs at `http://localhost:9000/swagger/index.html`
 
 ## To Do
 

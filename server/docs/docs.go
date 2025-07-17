@@ -51,7 +51,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/lib.MessageCreateSchema"
+                            "$ref": "#/definitions/api.MessageCreateSchema"
                         }
                     }
                 ],
@@ -59,13 +59,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/lib.APIResponse"
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/lib.APIResponse"
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     }
                 }
@@ -73,7 +73,7 @@ const docTemplate = `{
         },
         "/user/create": {
             "post": {
-                "description": "Register a new user",
+                "description": "User creation/registration route",
                 "consumes": [
                     "application/json"
                 ],
@@ -91,7 +91,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/lib.UserCreateSchema"
+                            "$ref": "#/definitions/api.UserCreateSchema"
                         }
                     }
                 ],
@@ -99,13 +99,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/lib.APIResponse"
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/lib.APIResponse"
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     }
                 }
@@ -131,7 +137,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/lib.UserLoginSchema"
+                            "$ref": "#/definitions/api.UserLoginSchema"
                         }
                     }
                 ],
@@ -139,13 +145,71 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/lib.APIResponse"
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/lib.APIResponse"
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/me": {
+            "post": {
+                "description": "Currently authenticated user route",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get Current User",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/token": {
+            "post": {
+                "description": "Retrieve authentication access token for authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get Access Token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     }
                 }
@@ -153,7 +217,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "lib.APIResponse": {
+        "api.APIResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -165,7 +229,7 @@ const docTemplate = `{
                 }
             }
         },
-        "lib.MessageCreateSchema": {
+        "api.MessageCreateSchema": {
             "type": "object",
             "required": [
                 "content"
@@ -177,7 +241,7 @@ const docTemplate = `{
                 }
             }
         },
-        "lib.UserCreateSchema": {
+        "api.UserCreateSchema": {
             "type": "object",
             "required": [
                 "display_name",
@@ -207,7 +271,7 @@ const docTemplate = `{
                 }
             }
         },
-        "lib.UserLoginSchema": {
+        "api.UserLoginSchema": {
             "type": "object",
             "required": [
                 "email",

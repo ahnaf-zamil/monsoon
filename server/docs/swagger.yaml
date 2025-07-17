@@ -1,6 +1,6 @@
 basePath: /api
 definitions:
-  lib.APIResponse:
+  api.APIResponse:
     properties:
       data: {}
       error:
@@ -8,7 +8,7 @@ definitions:
       message:
         type: string
     type: object
-  lib.MessageCreateSchema:
+  api.MessageCreateSchema:
     properties:
       content:
         example: hunter2
@@ -16,7 +16,7 @@ definitions:
     required:
     - content
     type: object
-  lib.UserCreateSchema:
+  api.UserCreateSchema:
     properties:
       display_name:
         example: John Doe
@@ -39,7 +39,7 @@ definitions:
     - password
     - username
     type: object
-  lib.UserLoginSchema:
+  api.UserLoginSchema:
     properties:
       email:
         example: john@doe.com
@@ -76,18 +76,18 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/lib.MessageCreateSchema'
+          $ref: '#/definitions/api.MessageCreateSchema'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/lib.APIResponse'
+            $ref: '#/definitions/api.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/lib.APIResponse'
+            $ref: '#/definitions/api.APIResponse'
       security:
       - BearerAuth: []
       summary: Create Message
@@ -97,25 +97,29 @@ paths:
     post:
       consumes:
       - application/json
-      description: Register a new user
+      description: User creation/registration route
       parameters:
       - description: User info
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/lib.UserCreateSchema'
+          $ref: '#/definitions/api.UserCreateSchema'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/lib.APIResponse'
+            $ref: '#/definitions/api.APIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/lib.APIResponse'
+            $ref: '#/definitions/api.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.APIResponse'
       summary: Create a new user
       tags:
       - users
@@ -130,19 +134,57 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/lib.UserLoginSchema'
+          $ref: '#/definitions/api.UserLoginSchema'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/lib.APIResponse'
+            $ref: '#/definitions/api.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/lib.APIResponse'
+            $ref: '#/definitions/api.APIResponse'
       summary: Login User
+      tags:
+      - users
+  /user/me:
+    post:
+      description: Currently authenticated user route
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      summary: Get Current User
+      tags:
+      - users
+  /user/token:
+    post:
+      description: Retrieve authentication access token for authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      summary: Get Access Token
       tags:
       - users
 securityDefinitions:
