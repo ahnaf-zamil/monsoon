@@ -78,7 +78,6 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
 	domain := c.Request.Host
 
 	if config.IsDev {
-
 		sameSite = http.SameSiteLaxMode
 		secure = false
 		domain = "localhost"
@@ -88,7 +87,7 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
 	}
 
 	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "rt",
+		Name:     api.COOKIE_REFRESH_TOKEN,
 		Value:    refreshToken,
 		Path:     "/",
 		Domain:   domain,
@@ -97,4 +96,19 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
 		Secure:   secure,
 		SameSite: sameSite,
 	})
+}
+
+func GetCurrentUser(c *gin.Context) (*api.UserModel, bool) {
+	userAny, exists := c.Get("current_user")
+
+	if !exists {
+		return nil, false
+	}
+
+	user, ok := userAny.(*api.UserModel)
+	if !ok {
+		return nil, false
+	}
+
+	return user, true
 }

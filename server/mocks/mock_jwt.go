@@ -47,3 +47,18 @@ func (mr *MockIJWTTokenHelperMockRecorder) CreateNewToken(data, expireAfter inte
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewToken", reflect.TypeOf((*MockIJWTTokenHelper)(nil).CreateNewToken), data, expireAfter)
 }
+
+// VerifyToken mocks base method.
+func (m *MockIJWTTokenHelper) VerifyToken(tokenString string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyToken", tokenString)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerifyToken indicates an expected call of VerifyToken.
+func (mr *MockIJWTTokenHelperMockRecorder) VerifyToken(tokenString interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyToken", reflect.TypeOf((*MockIJWTTokenHelper)(nil).VerifyToken), tokenString)
+}

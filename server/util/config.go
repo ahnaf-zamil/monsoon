@@ -22,7 +22,8 @@ var config *Config
 func LoadConfig() *Config {
 	IsDev, err := strconv.ParseBool(os.Getenv("IS_DEV"))
 	if err != nil {
-		IsDev = true
+		// Defaults to prod if IsDev isn't set
+		IsDev = false
 	}
 
 	config = &Config{

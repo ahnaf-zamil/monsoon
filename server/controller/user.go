@@ -138,8 +138,8 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	rs.Data = user
 
 	// Update new refresh token in DB upon login
-	rnd_code, _ := util.RandomBase16String(32)
-	refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
+	code, _ := util.RandomBase16String(32)
+	refreshToken, err := ctrl.TokenHelper.CreateNewToken(code, api.EXPIRY_REFRESH_TOKEN)
 	if err != nil {
 		util.HandleServerError(c, rs, err)
 		return
@@ -155,8 +155,41 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 		return
 	}
 
-	// TODO: Set refresh token in cookie
 	util.SetRefreshTokenCookie(c, refreshToken)
+	c.JSON(http.StatusOK, rs)
+}
+
+// @Summary      Get Access Token
+// @Description  Retrieve authentication access token for authenticated user
+// @Tags         users
+// @Produce      json
+// @Success      200      {object}  api.APIResponse
+// @Failure      401      {object}  api.APIResponse
+// @Router       /user/token [post]
+func (ctrl *UserController) UserGetAccessToken(c *gin.Context) {
+	rs := &api.APIResponse{}
+
+	user, ok := util.GetCurrentUser(c)
+	if !ok {
+		util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+		return
+	}
+
+	var exp int64
+
+	config := util.GetConfig()
+	if config.IsDev {
+		// 1 hour expiry in dev env, PITA to hit the login route every few minutes
+		exp = 60 * 60
+	} else {
+		exp = api.EXPIRY_ACCESS_TOKEN
+	}
+	accessToken, err := ctrl.TokenHelper.CreateNewToken(user.ID, exp)
+	if err != nil {
+		util.HandleServerError(c, rs, err)
+		return
+	}
+	rs.Data = accessToken
 	c.JSON(http.StatusOK, rs)
 }
 
@@ -166,7 +199,14 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 // @Produce      json
 // @Success      200      {object}  api.APIResponse
 // @Failure      401      {object}  api.APIResponse
-// @Router       /user/login [post]
+// @Router       /user/@me [post]
 func (ctrl *UserController) UserGetCurrent(c *gin.Context) {
-
+	rs := &api.APIResponse{}
+	user, ok := util.GetCurrentUser(c)
+	if !ok {
+		util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+		return
+	}
+	rs.Data = user
+	c.JSON(http.StatusOK, rs)
 }
