@@ -5,9 +5,11 @@ import (
 	"strconv"
 	"strings"
 
+	"monsoon/api"
 	"monsoon/db"
 	"monsoon/db/app"
 	"monsoon/lib"
+	"monsoon/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,24 +21,23 @@ type UserController struct {
 }
 
 // @Summary      Create a new user
-// @Description  Register a new user
+// @Description  User creation/registration route
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        request  body     	lib.UserCreateSchema  true  "User info"
-// @Success      201      {object}  lib.APIResponse
-// @Failure      400      {object}  lib.APIResponse
+// @Param        request  body     	api.UserCreateSchema  true  "User info"
+// @Success      201      {object}  api.APIResponse
+// @Failure      400      {object}  api.APIResponse
 // @Router       /user/create [post]
 func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
-	/* User creation/registration route */
 
 	// Validating input
-	req := &lib.UserCreateSchema{}
-	err := lib.ValidateRequestInput(c, req)
+	req := &api.UserCreateSchema{}
+	err := util.ValidateRequestInput(c, req)
 
-	rs := &lib.APIResponse{}
+	rs := &api.APIResponse{}
 	if err != nil {
-		lib.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
 	}
 
@@ -47,34 +48,34 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 	}
 	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 
 	if user != nil {
-		lib.WriteAPIError(c, "User already exists", rs, http.StatusConflict)
+		util.WriteAPIError(c, "User already exists", rs, http.StatusConflict)
 		return
 	}
 
 	userId := lib.GenerateSnowflakeID()
 	pwHash, err := ctrl.PasswordHasher.Hash(req.Password)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 
 	// Refresh token expires after 7 days, gets stored in DB
-	rnd_code, _ := lib.RandomBase16String(32)
+	rnd_code, _ := util.RandomBase16String(32)
 	refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 
 	// Creating the user here
 	err = ctrl.UserDB.CreateUser(c.Request.Context(), userId.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pwHash, refreshToken)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 	c.JSON(http.StatusCreated, rs)
@@ -85,18 +86,18 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        request  body     	lib.UserLoginSchema  true  "User credentials"
-// @Success      200      {object}  lib.APIResponse
-// @Failure      401      {object}  lib.APIResponse
+// @Param        request  body     	api.UserLoginSchema  true  "User credentials"
+// @Success      200      {object}  api.APIResponse
+// @Failure      401      {object}  api.APIResponse
 // @Router       /user/login [post]
 func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	/* User login and authentication route */
 
-	req := &lib.UserLoginSchema{}
-	err := lib.ValidateRequestInput(c, req)
-	rs := &lib.APIResponse{}
+	req := &api.UserLoginSchema{}
+	err := util.ValidateRequestInput(c, req)
+	rs := &api.APIResponse{}
 	if err != nil {
-		lib.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
 	}
 
@@ -106,13 +107,13 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	}
 	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 
 	// Small helper function to handle invalid credential error
 	_handleInvalidCredentials := func() {
-		lib.WriteAPIError(c, "Invalid credentials", rs, http.StatusUnauthorized)
+		util.WriteAPIError(c, "Invalid credentials", rs, http.StatusUnauthorized)
 	}
 
 	if user == nil {
@@ -124,7 +125,7 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	// Verify password
 	ok, err := ctrl.PasswordHasher.Verify(req.Password, user.Password)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 
@@ -137,10 +138,10 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	rs.Data = user
 
 	// Update new refresh token in DB upon login
-	rnd_code, _ := lib.RandomBase16String(32)
+	rnd_code, _ := util.RandomBase16String(32)
 	refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 
@@ -150,11 +151,22 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 	id, _ := strconv.ParseInt(user.ID, 10, 64)
 	err = ctrl.UserDB.UpdateUserTableById(c, id, db.TableAuth, values)
 	if err != nil {
-		lib.HandleServerError(c, rs, err)
+		util.HandleServerError(c, rs, err)
 		return
 	}
 
 	// TODO: Set refresh token in cookie
-	lib.SetRefreshTokenCookie(c, refreshToken)
+	util.SetRefreshTokenCookie(c, refreshToken)
 	c.JSON(http.StatusOK, rs)
+}
+
+// @Summary      Get Current User
+// @Description  Currently authenticated user route
+// @Tags         users
+// @Produce      json
+// @Success      200      {object}  api.APIResponse
+// @Failure      401      {object}  api.APIResponse
+// @Router       /user/login [post]
+func (ctrl *UserController) UserGetCurrent(c *gin.Context) {
+
 }

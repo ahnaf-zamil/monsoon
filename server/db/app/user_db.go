@@ -7,8 +7,8 @@ import (
 	"log"
 	"time"
 
+	"monsoon/api"
 	"monsoon/db"
-	"monsoon/lib"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -20,7 +20,7 @@ type UserDB struct {
 // Will be stubbed during testing
 type IUserDB interface {
 	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, refreshToken string) error
-	GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*lib.UserModel, error)
+	GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserModel, error)
 	UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error
 }
 
@@ -64,7 +64,7 @@ func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName
 	return nil
 }
 
-func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*lib.UserModel, error) {
+func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserModel, error) {
 	/* This function queries user based on OR query for multiple fields */
 	// TODO:
 
@@ -94,7 +94,7 @@ func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn
 	query = query + or_fields
 	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
 	row := u.AppDB.DBPool.QueryRow(ctx, query, value_arr...)
-	var user lib.UserModel
+	var user api.UserModel
 	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.Email, &user.Password, &user.RefreshToken)
 	if errors.Is(err, pgx.ErrNoRows) {
 		// Return nil if no rows

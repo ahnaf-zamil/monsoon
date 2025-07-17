@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"monsoon/db"
-	"monsoon/lib"
+	"monsoon/util"
 
 	"github.com/joho/godotenv"
 )
@@ -16,6 +16,6 @@ func main() {
 		log.Println("No .env file found")
 	}
 
-	conf := lib.LoadConfig()
+	conf := util.LoadConfig()
 	db.CreateAppDBSchemas(conf)
 }

@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"monsoon/util"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -26,5 +27,6 @@ func (j *JWTTokenHelper) CreateNewToken(data string, expireAfter int64) (string,
 }
 
 func GetJWTTokenHelper() IJWTTokenHelper {
+	config := util.GetConfig()
 	return &JWTTokenHelper{SecretKey: []byte(config.JWTSecret)}
 }

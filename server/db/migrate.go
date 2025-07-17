@@ -6,12 +6,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"monsoon/lib"
+	"monsoon/util"
 )
 
 var appSchemaDir = "./schema/app"
 
-func CreateAppDBSchemas(conf *lib.Config) {
+func CreateAppDBSchemas(conf *util.Config) {
 	log.Println("Starting schema generation for App DB")
 
 	if err := CreateConnectionPool(conf.AppDBPostgresURL); err != nil {

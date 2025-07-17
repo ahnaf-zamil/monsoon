@@ -1,4 +1,4 @@
-package lib
+package api
 
 /* Data models for internal use and for JSON marshalling for API requests */
 

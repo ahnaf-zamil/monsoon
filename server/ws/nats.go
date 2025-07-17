@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"monsoon/lib"
+	"monsoon/api"
 
 	"github.com/nats-io/nats.go"
 )
@@ -39,7 +39,7 @@ func (n *NATSPublisher) InitMsgListener() {
 
 		// Unmarshals received JSON into model for further processing
 		// TODO: In case further message verification and integrity needs to be checked, do it here
-		var msg lib.MessageModel
+		var msg api.MessageModel
 		err := json.Unmarshal(m.Data, &msg)
 		if err != nil {
 			panic(err)

@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"monsoon/lib"
+	"monsoon/util"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -18,7 +18,7 @@ var upgrader = websocket.Upgrader{
 
 // Handles socket client connecting to the server
 func RegisterSocketClient(wsConn *websocket.Conn, userId string) (*Socket, error) {
-	s := &Socket{ID: lib.GenerateSocketID(), Rooms: make(map[string]bool), UserID: userId, WsConn: wsConn}
+	s := &Socket{ID: util.GenerateSocketID(), Rooms: make(map[string]bool), UserID: userId, WsConn: wsConn}
 	AddSocketToList(s)
 
 	// Adding socket to rooms

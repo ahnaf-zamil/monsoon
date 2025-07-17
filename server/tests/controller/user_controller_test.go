@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"monsoon/api"
 	"monsoon/controller"
-	"monsoon/lib"
 	"monsoon/mocks"
 
 	"github.com/gin-gonic/gin"
@@ -97,7 +97,7 @@ func TestUserCreateRoute(t *testing.T) {
 			}`,
 			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
 				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).
-					Return(&lib.UserModel{Username: "user1"}, nil)
+					Return(&api.UserModel{Username: "user1"}, nil)
 			},
 			expectedStatus: http.StatusConflict,
 		},
@@ -188,7 +188,7 @@ func TestUserLoginRoute(t *testing.T) {
 			}
 			`,
 			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
-				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&lib.UserModel{Username: "user1"}, nil)
+				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&api.UserModel{Username: "user1"}, nil)
 				hasher.EXPECT().Verify(gomock.Any(), gomock.Any()).Return(true, nil)
 				token.EXPECT().CreateNewToken(gomock.Any(), gomock.Any())
 				db.EXPECT().UpdateUserTableById(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
@@ -204,7 +204,7 @@ func TestUserLoginRoute(t *testing.T) {
 			}
 			`,
 			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
-				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&lib.UserModel{Username: "user1"}, nil)
+				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&api.UserModel{Username: "user1"}, nil)
 				hasher.EXPECT().Verify(gomock.Any(), gomock.Any()).Return(false, nil)
 			},
 			expectedStatus: http.StatusUnauthorized,
@@ -240,7 +240,7 @@ func TestUserLoginRoute(t *testing.T) {
 				"password": "password123"
 			}`,
 			setupMocks: func(db *mocks.MockIUserDB, hasher *mocks.MockIPasswordHasher, token *mocks.MockIJWTTokenHelper) {
-				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&lib.UserModel{Username: "user1"}, nil)
+				db.EXPECT().GetUserByAnyField(gomock.Any(), gomock.Any()).Return(&api.UserModel{Username: "user1"}, nil)
 				hasher.EXPECT().Verify(gomock.Any(), gomock.Any()).Return(false, fmt.Errorf("hasher error"))
 			},
 			expectedStatus: http.StatusInternalServerError,

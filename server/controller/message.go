@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"monsoon/api"
 	"monsoon/lib"
+	"monsoon/util"
 	"monsoon/ws"
 
 	"github.com/gin-gonic/gin"
@@ -20,25 +22,25 @@ type MessageController struct {
 // @Accept       json
 // @Produce      json
 // @Param        roomId   path      int  true  "Room ID"
-// @Param        request  body     	lib.MessageCreateSchema  true  "Message data"
-// @Success      201      {object}  lib.APIResponse
-// @Failure      401      {object}  lib.APIResponse
+// @Param        request  body     	api.MessageCreateSchema  true  "Message data"
+// @Success      201      {object}  api.APIResponse
+// @Failure      401      {object}  api.APIResponse
 // @Router       /message/create/{roomId} [post]
 // @Security    BearerAuth
 func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 	// Validating input
-	req := &lib.MessageCreateSchema{}
-	err := lib.ValidateRequestInput(c, req)
+	req := &api.MessageCreateSchema{}
+	err := util.ValidateRequestInput(c, req)
 
-	rs := &lib.APIResponse{}
+	rs := &api.APIResponse{}
 	if err != nil {
-		lib.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
 	}
 
 	user_id, exists := c.Get("user_id")
 	if !exists {
-		lib.WriteAPIError(c, "Auth context error", rs, http.StatusUnauthorized)
+		util.WriteAPIError(c, "Auth context error", rs, http.StatusUnauthorized)
 		return
 	}
 
@@ -46,7 +48,7 @@ func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 	content := req.Content
 
 	// TODO: Use snowflake ID and implement proper payload structuring
-	payload := lib.MessageModel{
+	payload := api.MessageModel{
 		ID:        lib.GenerateSnowflakeID().String(),
 		Content:   content,
 		CreatedAt: time.Now().Unix(),

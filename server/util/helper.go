@@ -1,4 +1,4 @@
-package lib
+package util
 
 import (
 	"crypto/rand"
@@ -9,6 +9,8 @@ import (
 	"math"
 	"net/http"
 	"sync"
+
+	"monsoon/api"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,13 +47,13 @@ func PrettyPrintSyncMap(data *sync.Map) {
 }
 
 /* API-sided */
-func WriteAPIError(c *gin.Context, message string, rs *APIResponse, r_code int) {
+func WriteAPIError(c *gin.Context, message string, rs *api.APIResponse, r_code int) {
 	rs.Err = true
 	rs.Message = message
 	c.JSON(r_code, rs)
 }
 
-func HandleServerError(c *gin.Context, rs *APIResponse, err error) {
+func HandleServerError(c *gin.Context, rs *api.APIResponse, err error) {
 	// Instead of rewriting the same two lines every single time, just run it for error cases
 	WriteAPIError(c, "Internal server error", rs, http.StatusInternalServerError)
 	log.Println(err)

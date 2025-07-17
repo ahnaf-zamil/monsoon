@@ -3,6 +3,7 @@ package lib
 import (
 	"encoding/binary"
 	"log"
+	"monsoon/util"
 	"net"
 	"strconv"
 
@@ -14,7 +15,7 @@ import (
 var node *snowflake.Node
 
 func GetNodeID() int {
-	conf := GetConfig()
+	conf := util.GetConfig()
 	if conf.SnowflakeNodeId != "" {
 		id, err := strconv.Atoi(conf.SnowflakeNodeId)
 		if err == nil && id >= 0 && id < 1024 {

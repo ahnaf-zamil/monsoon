@@ -22,4 +22,5 @@ func InitControllers(r *gin.Engine) {
 	user_ctrl := &UserController{UserDB: app.GetUserDB(), PasswordHasher: lib.GetPasswordHasher(), TokenHelper: lib.GetJWTTokenHelper()}
 	user.POST("/create", user_ctrl.UserCreateRoute)
 	user.POST("/login", user_ctrl.UserLoginRoute)
+	user.GET("/@me", middleware.RequireAuth(), user_ctrl.UserGetCurrent)
 }

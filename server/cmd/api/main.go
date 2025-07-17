@@ -8,6 +8,7 @@ import (
 	"monsoon/controller"
 	"monsoon/db"
 	"monsoon/lib"
+	"monsoon/util"
 	"monsoon/ws"
 
 	"github.com/gin-contrib/cors"
@@ -38,7 +39,7 @@ func main() {
 		log.Println("No .env file found")
 	}
 
-	conf := lib.LoadConfig()
+	conf := util.LoadConfig()
 
 	// Initialize snowflake ID generator
 	lib.InitSnowflakeNode()
