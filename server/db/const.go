@@ -11,18 +11,23 @@ type UserColumn struct {
 }
 
 const (
-	TableUsers string = "users"
-	TableAuth  string = "users_auth"
+	TableUsers        string = "users"
+	TableAuth         string = "users_auth"
+	TableUsersSession string = "users_session"
 )
 
 var (
-	// UserColum -> {Column Name, Table Name}
-	ColUserID           UserColumn = UserColumn{"id", TableUsers}
-	ColUserUsername     UserColumn = UserColumn{"username", TableUsers}
-	ColUserDisplayName  UserColumn = UserColumn{"display_name", TableUsers}
-	ColUserCreatedAt    UserColumn = UserColumn{"created_at", TableUsers}
-	ColUserUpdatedAt    UserColumn = UserColumn{"updated_at", TableUsers}
-	ColUserEmail        UserColumn = UserColumn{"email", TableAuth}
-	ColUserPassword     UserColumn = UserColumn{"pw_hash", TableAuth}
-	ColUserRefreshToken UserColumn = UserColumn{"refresh_token", TableAuth}
+	// UserColumn -> {Column Name, Table Name}
+	ColUserID          UserColumn = UserColumn{"id", TableUsers}
+	ColUserUsername    UserColumn = UserColumn{"username", TableUsers}
+	ColUserDisplayName UserColumn = UserColumn{"display_name", TableUsers}
+	ColUserCreatedAt   UserColumn = UserColumn{"created_at", TableUsers}
+	ColUserUpdatedAt   UserColumn = UserColumn{"updated_at", TableUsers}
+	ColUserEmail       UserColumn = UserColumn{"email", TableAuth}
+	ColUserPassword    UserColumn = UserColumn{"pw_hash", TableAuth}
+
+	ColSessionID           UserColumn = UserColumn{"session_id", TableUsersSession}
+	ColSessionUserID       UserColumn = UserColumn{"user_id", TableUsersSession}
+	ColSessionRefreshToken UserColumn = UserColumn{"refresh_token", TableUsersSession}
+	ColSessionCreatedAt    UserColumn = UserColumn{"created_at", TableUsersSession}
 )

@@ -6,6 +6,7 @@ type APIResponse struct {
 	Err     bool   `json:"error"`
 	Message string `json:"message"`
 	Data    any    `json:"data"`
+	Status  int    `json:"status"`
 }
 
 type MessageCreateSchema struct {

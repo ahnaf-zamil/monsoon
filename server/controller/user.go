@@ -62,21 +62,21 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 		return
 	}
 
-	// Refresh token expires after 7 days, gets stored in DB
-	rnd_code, _ := util.RandomBase16String(32)
-	refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
-	if err != nil {
-		util.HandleServerError(c, rs, err)
-		return
-	}
+	// // Refresh token expires after 7 days, gets stored in DB
+	// rnd_code, _ := util.RandomBase16String(32)
+	// refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
+	// if err != nil {
+	// 	util.HandleServerError(c, rs, err)
+	// 	return
+	// }
 
 	// Creating the user here
-	err = ctrl.UserDB.CreateUser(c.Request.Context(), userId.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pwHash, refreshToken)
+	err = ctrl.UserDB.CreateUser(c.Request.Context(), userId.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pwHash)
 	if err != nil {
 		util.HandleServerError(c, rs, err)
 		return
 	}
-	c.JSON(http.StatusCreated, rs)
+	util.WriteAPIResponse(c, user, rs, http.StatusCreated)
 }
 
 // @Summary      Login User
@@ -133,8 +133,6 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 		return
 	}
 
-	rs.Data = user
-
 	// Update new refresh token in DB upon login
 	code, _ := util.RandomBase16String(32)
 	refreshToken, err := ctrl.TokenHelper.CreateNewToken(code, api.EXPIRY_REFRESH_TOKEN)
@@ -143,18 +141,18 @@ func (ctrl *UserController) UserLoginRoute(c *gin.Context) {
 		return
 	}
 
-	values := map[db.UserColumn]string{
-		db.ColUserRefreshToken: refreshToken,
-	}
-	id, _ := strconv.ParseInt(user.ID, 10, 64)
-	err = ctrl.UserDB.UpdateUserTableById(c, id, db.TableAuth, values)
+	userID, _ := strconv.ParseInt(user.ID, 10, 64)
+	sessionID := lib.GenerateSnowflakeID()
+
+	// Creating session entry
+	err = ctrl.UserDB.CreateUserSession(c.Request.Context(), sessionID.Int64(), userID, refreshToken)
 	if err != nil {
 		util.HandleServerError(c, rs, err)
 		return
 	}
 
 	util.SetRefreshTokenCookie(c, refreshToken)
-	c.JSON(http.StatusOK, rs)
+	util.WriteAPIResponse(c, user, rs, http.StatusOK)
 }
 
 // @Summary      Get Access Token
@@ -177,6 +175,7 @@ func (ctrl *UserController) UserGetAccessToken(c *gin.Context) {
 
 	config := util.GetConfig()
 	if config.IsDev {
+
 		// 2 hour expiry in dev env, PITA to hit the token route every few minutes
 		exp = 2 * 60 * 60
 	} else {
@@ -187,8 +186,7 @@ func (ctrl *UserController) UserGetAccessToken(c *gin.Context) {
 		util.HandleServerError(c, rs, err)
 		return
 	}
-	rs.Data = accessToken
-	c.JSON(http.StatusOK, rs)
+	util.WriteAPIResponse(c, accessToken, rs, http.StatusOK)
 }
 
 // @Summary      Get Current User
@@ -206,6 +204,6 @@ func (ctrl *UserController) UserGetCurrent(c *gin.Context) {
 		util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
 		return
 	}
-	rs.Data = user
-	c.JSON(http.StatusOK, rs)
+
+	util.WriteAPIResponse(c, user, rs, http.StatusOK)
 }

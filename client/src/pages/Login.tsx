@@ -30,7 +30,7 @@ export const Login: React.FC = () => {
       // Login user here
       const resp = await loginUser(email, password);
       if (!isAxiosError(resp)) {
-        navigate("/");
+        window.location.href = "/"
       } else {
         switch (resp.response?.status) {
           case 400:

@@ -47,16 +47,25 @@ func PrettyPrintSyncMap(data *sync.Map) {
 }
 
 /* API-sided */
+func WriteAPIResponse(c *gin.Context, data any, rs *api.APIResponse, r_code int) {
+	rs.Err = false
+	rs.Message = ""
+	rs.Status = r_code
+	rs.Data = data
+	c.JSON(r_code, rs)
+}
+
 func WriteAPIError(c *gin.Context, message string, rs *api.APIResponse, r_code int) {
 	rs.Err = true
 	rs.Message = message
+	rs.Status = r_code
 	c.JSON(r_code, rs)
 }
 
 func HandleServerError(c *gin.Context, rs *api.APIResponse, err error) {
 	// Instead of rewriting the same two lines every single time, just run it for error cases
-	WriteAPIError(c, "Internal server error", rs, http.StatusInternalServerError)
 	log.Println(err)
+	WriteAPIError(c, "Internal server error", rs, http.StatusInternalServerError)
 }
 
 func RandomBase16String(l int) (string, error) {
@@ -100,7 +109,6 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
 
 func GetCurrentUser(c *gin.Context) (*api.UserModel, bool) {
 	userAny, exists := c.Get("current_user")
-
 	if !exists {
 		return nil, false
 	}

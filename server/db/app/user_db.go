@@ -18,9 +18,11 @@ type UserDB struct {
 
 // Will be stubbed during testing
 type IUserDB interface {
-	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, refreshToken string) error
+	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error
 	GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserModel, error)
 	UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error
+	CreateUserSession(ctx context.Context, sessionID int64, userID int64, refreshToken string) error
+	GetSessionByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserSessionModel, error)
 
 	// Util
 	GetUserByID(c context.Context, userID string) (*api.UserModel, error)
@@ -31,7 +33,7 @@ func GetUserDB() *UserDB {
 	return user_db
 }
 
-func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, refreshToken string) error {
+func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error {
 	/* Service function to create a user */
 
 	// TODO: Separate DB functionality like insert, delete, etc. into separate functions
@@ -54,7 +56,7 @@ func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName
 	}
 
 	// Insert user auth data into the auth table
-	err = insertUsersAuth(tx, ctx, id, email, string(password), refreshToken)
+	err = insertUserAuth(tx, ctx, id, email, string(password))
 	if err != nil {
 		return err
 	}
@@ -82,7 +84,7 @@ func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn
 	or_fields := db.GenerateDBOrFields(field_arr)
 
 	// Generate the SELECT columns
-	cols := []db.UserColumn{db.ColUserID, db.ColUserUsername, db.ColUserDisplayName, db.ColUserCreatedAt, db.ColUserEmail, db.ColUserPassword, db.ColUserRefreshToken}
+	cols := []db.UserColumn{db.ColUserID, db.ColUserUsername, db.ColUserDisplayName, db.ColUserCreatedAt, db.ColUserEmail, db.ColUserPassword}
 	selected_columns := db.GenerateDBQueryFields(cols)
 
 	query := fmt.Sprintf("SELECT %s FROM %s INNER JOIN %s ON %s.%s=%s.%s WHERE ",
@@ -97,7 +99,7 @@ func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn
 	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
 	row := u.AppDB.DBPool.QueryRow(ctx, query, value_arr...)
 	var user api.UserModel
-	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.Email, &user.Password, &user.RefreshToken)
+	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.Email, &user.Password)
 	if errors.Is(err, pgx.ErrNoRows) {
 		// Return nil if no rows
 		return nil, nil
@@ -140,12 +142,89 @@ func (u *UserDB) UpdateUserTableById(ctx context.Context, id int64, table string
 	return err
 }
 
+func (u *UserDB) CreateUserSession(ctx context.Context, sessionID int64, userID int64, refreshToken string) error {
+	/* Service function to create a user session */
+
+	tx, err := u.AppDB.DBPool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
+			log.Println("TX rollback error:", err)
+		}
+	}()
+
+	// Insert user data in users table
+	sessionCreated := time.Now().Unix()
+	err = insertUserSession(tx, ctx, sessionID, userID, refreshToken, sessionCreated)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		log.Println("TX commit error:", err)
+	}
+	return nil
+}
+
+func (u *UserDB) GetSessionByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserSessionModel, error) {
+	/* This function queries user based on OR query for multiple fields */
+	// TODO:
+
+	// Separate the fields and respective values into properly sequenced slices for later use in query generation
+	field_arr := []db.UserColumn{}
+	value_arr := []any{}
+	for k, v := range fields {
+		field_arr = append(field_arr, k)
+		value_arr = append(value_arr, v)
+	}
+
+	// Generate the "OR" conditions using given fields
+	or_fields := db.GenerateDBOrFields(field_arr)
+
+	// Generate the SELECT columns
+	cols := []db.UserColumn{db.ColSessionID, db.ColSessionUserID, db.ColSessionRefreshToken, db.ColSessionCreatedAt}
+	selected_columns := db.GenerateDBQueryFields(cols)
+
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s",
+		selected_columns,
+		db.TableUsersSession,
+		or_fields)
+
+	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
+	row := u.AppDB.DBPool.QueryRow(ctx, query, value_arr...)
+
+	var session api.UserSessionModel
+	err := row.Scan(&session.SessionID, &session.UserID, &session.RefreshToken, &session.CreatedAt)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		// Return nil if no rows
+		return nil, nil
+	} else if err != nil {
+		// If there's error, just return error
+		return nil, err
+	} else {
+		// Else, just return user
+		return &session, nil
+	}
+}
+
 func insertUser(tx pgx.Tx, ctx context.Context, id int64, username, display_name string, created_at int64, updated_at int64) error {
-	_, err := tx.Exec(ctx, "INSERT INTO users (id, username, display_name, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)", id, username, display_name, created_at, updated_at)
+	query := fmt.Sprintf("INSERT INTO %s (id, username, display_name, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)", db.TableUsers)
+	_, err := tx.Exec(ctx, query, id, username, display_name, created_at, updated_at)
 	return err
 }
 
-func insertUsersAuth(tx pgx.Tx, ctx context.Context, id int64, email, pw_hash string, refresh_token string) error {
-	_, err := tx.Exec(ctx, "INSERT INTO users_auth (id, email, pw_hash, refresh_token) VALUES ($1, $2, $3, $4)", id, email, pw_hash, refresh_token)
+func insertUserAuth(tx pgx.Tx, ctx context.Context, id int64, email, pw_hash string) error {
+	query := fmt.Sprintf("INSERT INTO %s (id, email, pw_hash) VALUES ($1, $2, $3)", db.TableAuth)
+	_, err := tx.Exec(ctx, query, id, email, pw_hash)
+	return err
+}
+
+func insertUserSession(tx pgx.Tx, ctx context.Context, sessionID int64, userID int64, refreshToken string, sessionCreated int64) error {
+	query := fmt.Sprintf("INSERT INTO %s (session_id, user_id, refresh_token, created_at) VALUES ($1, $2, $3, $4)", db.TableUsersSession)
+	_, err := tx.Exec(ctx, query, sessionID, userID, refreshToken, sessionCreated)
 	return err
 }
