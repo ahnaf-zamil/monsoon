@@ -6,6 +6,7 @@ import (
 	"monsoon/db/app"
 	"monsoon/lib"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -53,9 +54,21 @@ func AuthRequired(userDB app.IUserDB, jwt lib.IJWTTokenHelper) gin.HandlerFunc {
 	sent in Authorization header */
 
 	return func(c *gin.Context) {
-		token := c.GetHeader("Authorization")
+		authHeader := c.GetHeader("Authorization")
 		rs := &api.APIResponse{Err: true, Message: "Unauthorized"}
 
+		if authHeader == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			return
+		}
+
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			return
+		}
+
+		token := strings.TrimSpace(parts[1])
 		if token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
 			return
