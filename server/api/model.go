@@ -13,11 +13,17 @@ type MessageModel struct {
 }
 
 type UserModel struct {
-	ID           string `json:"id"`
-	Username     string `json:"username"`
-	DisplayName  string `json:"display_name"`
-	CreatedAt    string `json:"created_at"`
-	Email        string `json:"email"`
-	Password     string `json:"-"`
-	RefreshToken string `json:"-"`
+	ID          string `json:"id"`
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+	CreatedAt   string `json:"created_at"`
+	Email       string `json:"email"`
+	Password    string `json:"-"`
+}
+
+type UserSessionModel struct {
+	SessionID    string
+	UserID       string
+	RefreshToken string
+	CreatedAt    int64
 }

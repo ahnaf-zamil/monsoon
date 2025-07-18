@@ -68,6 +68,6 @@ func (ctrl *MessageController) MessageUserRoute(c *gin.Context) {
 	ctrl.NATS_PUB.SendMsgNATS(payload)
 
 	// TODO: Persist message in DB
-
-	c.JSON(http.StatusCreated, rs)
+	// TODO: Return message payload
+	util.WriteAPIResponse(c, "", rs, http.StatusCreated)
 }

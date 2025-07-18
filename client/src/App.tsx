@@ -5,12 +5,12 @@ import { Login } from "./pages/Login";
 import { AuthRequired } from "./pages/AuthRequired";
 
 const App: React.FC = () => (
-  <Routes>
-    <Route element={<AuthRequired />}>
-      <Route path="/" element={<Home />} />
-    </Route>
-    <Route path="/login" element={<Login />} />
-  </Routes>
+    <Routes>
+        <Route element={<AuthRequired />}>
+            <Route path="/" element={<Home />} />
+        </Route>
+        <Route path="/login" element={<Login />} />
+    </Routes>
 );
 
 export default App;

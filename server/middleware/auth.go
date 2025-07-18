@@ -32,11 +32,16 @@ func RefreshTokenRequired(userDB app.IUserDB, jwt lib.IJWTTokenHelper) gin.Handl
 		}
 
 		// Fetch user from DB
-		fields := map[db.UserColumn]any{
-			db.ColUserRefreshToken: token,
+		session, _ := userDB.GetSessionByAnyField(c.Request.Context(), map[db.UserColumn]any{
+			db.ColSessionRefreshToken: token,
+		})
+		if session == nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			return
 		}
-		user, err := userDB.GetUserByAnyField(c.Request.Context(), fields)
-		if err != nil {
+
+		user, _ := userDB.GetUserByID(c.Request.Context(), session.UserID)
+		if user == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
 			return
 		}
