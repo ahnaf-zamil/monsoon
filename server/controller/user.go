@@ -1,15 +1,14 @@
 package controller
 
 import (
-	"net/http"
-	"strconv"
-	"strings"
-
 	"monsoon/api"
 	"monsoon/db"
 	"monsoon/db/app"
 	"monsoon/lib"
 	"monsoon/util"
+	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +29,6 @@ type UserController struct {
 // @Failure      400,409      {object}  api.APIResponse
 // @Router       /user/create [post]
 func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
-
 	// Validating input
 	req := &api.UserCreateSchema{}
 	err := util.ValidateRequestInput(c, req)
@@ -179,8 +177,8 @@ func (ctrl *UserController) UserGetAccessToken(c *gin.Context) {
 
 	config := util.GetConfig()
 	if config.IsDev {
-		// 1 hour expiry in dev env, PITA to hit the login route every few minutes
-		exp = 60 * 60
+		// 2 hour expiry in dev env, PITA to hit the token route every few minutes
+		exp = 2 * 60 * 60
 	} else {
 		exp = api.EXPIRY_ACCESS_TOKEN
 	}
@@ -200,6 +198,7 @@ func (ctrl *UserController) UserGetAccessToken(c *gin.Context) {
 // @Success      200      {object}  api.APIResponse
 // @Failure      401      {object}  api.APIResponse
 // @Router       /user/me [post]
+// @Security    BearerAuth
 func (ctrl *UserController) UserGetCurrent(c *gin.Context) {
 	rs := &api.APIResponse{}
 	user, ok := util.GetCurrentUser(c)

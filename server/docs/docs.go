@@ -19,14 +19,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/message/create/{roomId}": {
+        "/message/user/{recipientId}": {
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Post a message",
+                "description": "Send a direct message to a user",
                 "consumes": [
                     "application/json"
                 ],
@@ -36,12 +36,12 @@ const docTemplate = `{
                 "tags": [
                     "messages"
                 ],
-                "summary": "Create Message",
+                "summary": "Directly Message a User",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Room ID",
-                        "name": "roomId",
+                        "description": "User ID",
+                        "name": "userId",
                         "in": "path",
                         "required": true
                     },
@@ -165,6 +165,11 @@ const docTemplate = `{
         },
         "/user/me": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Currently authenticated user route",
                 "produces": [
                     "application/json"

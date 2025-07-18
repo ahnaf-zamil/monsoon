@@ -60,15 +60,15 @@ info:
   title: Monsoon API
   version: 0.0.1
 paths:
-  /message/create/{roomId}:
+  /message/user/{recipientId}:
     post:
       consumes:
       - application/json
-      description: Post a message
+      description: Send a direct message to a user
       parameters:
-      - description: Room ID
+      - description: User ID
         in: path
-        name: roomId
+        name: userId
         required: true
         type: integer
       - description: Message data
@@ -90,7 +90,7 @@ paths:
             $ref: '#/definitions/api.APIResponse'
       security:
       - BearerAuth: []
-      summary: Create Message
+      summary: Directly Message a User
       tags:
       - messages
   /user/create:
@@ -167,6 +167,8 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
       summary: Get Current User
       tags:
       - users

@@ -1,33 +1,34 @@
 package controller
 
 import (
-	"net/http"
-	"time"
-
 	"monsoon/api"
+	"monsoon/db/app"
 	"monsoon/lib"
 	"monsoon/util"
 	"monsoon/ws"
+	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type MessageController struct {
 	NATS_PUB ws.INATSPublisher
+	UserDB   app.IUserDB
 }
 
-// @Summary      Create Message
-// @Description  Post a message
+// @Summary      Directly Message a User
+// @Description  Send a direct message to a user
 // @Tags         messages
 // @Accept       json
 // @Produce      json
-// @Param        roomId   path      int  true  "Room ID"
+// @Param        userId   path      int  true  "User ID"
 // @Param        request  body     	api.MessageCreateSchema  true  "Message data"
 // @Success      201      {object}  api.APIResponse
 // @Failure      401      {object}  api.APIResponse
-// @Router       /message/create/{roomId} [post]
+// @Router       /message/user/{recipientId} [post]
 // @Security    BearerAuth
-func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
+func (ctrl *MessageController) MessageUserRoute(c *gin.Context) {
 	// Validating input
 	req := &api.MessageCreateSchema{}
 	err := util.ValidateRequestInput(c, req)
@@ -37,30 +38,36 @@ func (ctrl *MessageController) MessageCreateRoute(c *gin.Context) {
 		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
 	}
-
-	user_id, exists := c.Get("user_id")
-	if !exists {
-		util.WriteAPIError(c, "Auth context error", rs, http.StatusUnauthorized)
+	author, ok := util.GetCurrentUser(c)
+	if !ok {
+		util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
 		return
 	}
 
-	room_id := c.Param("room_id")
-	content := req.Content
+	recipientID := c.Param("recipientID")
 
-	// TODO: Use snowflake ID and implement proper payload structuring
+	recipient, err := ctrl.UserDB.GetUserByID(c.Request.Context(), recipientID)
+	if err != nil {
+		util.WriteAPIError(c, "User not found", rs, http.StatusNotFound)
+		return
+	}
+
+	content := req.Content
 	payload := api.MessageModel{
-		ID:        lib.GenerateSnowflakeID().String(),
-		Content:   content,
-		CreatedAt: time.Now().Unix(),
-		RoomID:    room_id,
-		UserID:    user_id.(string),
+		ID:          lib.GenerateSnowflakeID().String(),
+		Content:     content,
+		CreatedAt:   time.Now().Unix(),
+		RoomID:      "", // Empty for DM messages
+		AuthorID:    author.ID,
+		RecipientID: recipient.ID,
+		IsDM:        true,
 	}
 
 	rs.Data = &payload
-
 	// Dispatch new message to NATS
-	// TODO: Dispatch message to Kafka logs for batch processing
 	ctrl.NATS_PUB.SendMsgNATS(payload)
+
+	// TODO: Persist message in DB
 
 	c.JSON(http.StatusCreated, rs)
 }

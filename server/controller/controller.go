@@ -23,8 +23,8 @@ func InitControllers(r *gin.Engine) {
 	msg := api.Group("/message")
 	user := api.Group("/user")
 
-	msg_ctrl := &MessageController{NATS_PUB: &ws.NATSPublisher{}}
-	msg.POST("/create/:room_id", authMiddleware, msg_ctrl.MessageCreateRoute)
+	msg_ctrl := &MessageController{UserDB: userDB, NATS_PUB: &ws.NATSPublisher{}}
+	msg.POST("/user/:recipientID", authMiddleware, msg_ctrl.MessageUserRoute)
 
 	user_ctrl := &UserController{UserDB: userDB, PasswordHasher: passHasher, TokenHelper: tokenHelper}
 	user.POST("/create", user_ctrl.UserCreateRoute)

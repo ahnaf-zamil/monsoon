@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
-
 	"monsoon/api"
 	"monsoon/db"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -22,6 +21,9 @@ type IUserDB interface {
 	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, refreshToken string) error
 	GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserModel, error)
 	UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error
+
+	// Util
+	GetUserByID(c context.Context, userID string) (*api.UserModel, error)
 }
 
 func GetUserDB() *UserDB {

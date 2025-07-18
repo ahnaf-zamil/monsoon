@@ -65,11 +65,10 @@ API Docs at `http://localhost:9000/swagger/index.html`
 
 ## To Do
 
-- Postgres DB setup for authentication and data store
-- Use separate databases for storing application data (users, rooms) and messages
+- Set up separate DB for persisting messages
+- Separate "groups" and "dm" in WebSocket rooms state
 - Implement message bucketing and partitons
-- Set up JWT for user auth state
-- Write unit tests for DB functions and room states
+- And more...
 
 ## License
 
