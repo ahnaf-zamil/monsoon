@@ -3,7 +3,10 @@ package ws
 import (
 	"log"
 	"net/http"
+	"time"
 
+	"monsoon/db/app"
+	"monsoon/lib"
 	"monsoon/util"
 
 	"github.com/gin-gonic/gin"
@@ -16,14 +19,39 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func GetWebSocketHandler() IWebSocketHandler {
+	return &WebSocketHandler{UserDB: app.GetUserDB(), TokenHelper: lib.GetJWTTokenHelper()}
+}
+
+func (w *WebSocketHandler) HandleSocketEvent(socket *Socket, msg map[string]any) {
+	if opcodeRaw, ok := msg["opcode"]; ok {
+		if opcodeStr, ok := opcodeRaw.(string); ok {
+			switch EventOpCode(opcodeStr) {
+			case OpHeartbeat:
+				w.HandleClientHeartbeat(socket)
+			}
+		}
+	}
+}
+
 // Handles socket client connecting to the server
-func RegisterSocketClient(wsConn *websocket.Conn, userId string) (*Socket, error) {
-	s := &Socket{ID: util.GenerateSocketID(), Rooms: make(map[string]bool), UserID: userId, WsConn: wsConn}
+func (w *WebSocketHandler) RegisterSocketClient(wsConn *websocket.Conn, userID string) (*Socket, error) {
+	s := &Socket{ID: util.GenerateSocketID(), Rooms: make(map[string]bool), UserID: userID, WsConn: wsConn, LastHeartbeat: time.Now()}
+	mu.RLock()
 	AddSocketToList(s)
+
+	err := w.DispatchEvent(s, OpHeartbeatInit, gin.H{"interval": HEARTBEAT_INTERVAL.Milliseconds(), "timeout": HEARTBEAT_TIMEOUT.Milliseconds()})
+	if err != nil {
+		RemoveSocketFromList(s)
+		return nil, err
+	}
+	mu.RUnlock()
 
 	// Adding socket to rooms
 	// TODO: Connect database and fetch room list to join
-	AddSocketToRoom(s, "amogus")
+
+	// Add user to own DM room to receive DMs
+	AddSocketToRoom(s, "dm:"+userID)
 
 	// Return list of rooms to the client
 	roomsList := []string{}
@@ -32,12 +60,8 @@ func RegisterSocketClient(wsConn *websocket.Conn, userId string) (*Socket, error
 	}
 	// Handle rooms list send error
 	// Client will keep all these rooms list in memory
-	if err := s.WsConn.WriteJSON(map[string]any{"rooms": roomsList}); err != nil {
-		defer s.WsConn.Close()
-		return s, err
-	}
-
-	return s, nil
+	err = w.DispatchEvent(s, OpRoomSync, gin.H{"rooms": roomsList})
+	return s, err
 }
 
 // Handles any socket disconnection event
@@ -52,7 +76,7 @@ func HandleSocketDisconnect(client_s *Socket) {
 	}
 }
 
-func WsHandler(c *gin.Context) {
+func (w *WebSocketHandler) ConnectionHandler(c *gin.Context) {
 	// Upgrading connection to websocket
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -63,8 +87,6 @@ func WsHandler(c *gin.Context) {
 	defer conn.Close()
 
 	log.Println("Client connected from:", c.ClientIP())
-
-	// Take authentication token. For now we consider token to be user ID
 	token := c.Query("token")
 
 	if token == "" {
@@ -76,18 +98,30 @@ func WsHandler(c *gin.Context) {
 		return
 	}
 
-	// TODO: Fetch user ID by using token for Socket struct init
-	// For now the token is being used as user ID
-	userId := token
+	userID, err := w.TokenHelper.VerifyToken(token)
+	if err != nil {
+		if err := conn.WriteJSON(map[string]any{"error": "Unauthorized: Missing token"}); err != nil {
+			log.Println("Error writing msg:", err)
+		}
+
+		log.Printf("Disconnect: %s connected with bad token", c.ClientIP())
+		return
+	}
+
+	user, _ := w.UserDB.GetUserByID(c.Request.Context(), userID)
+	if user == nil {
+		if err := conn.WriteJSON(map[string]any{"error": "Unauthorized"}); err != nil {
+			log.Println("Error writing msg:", err)
+		}
+	}
 
 	// Add client to socket state
-	client_s, err := RegisterSocketClient(conn, userId)
+	client_s, err := w.RegisterSocketClient(conn, userID)
 	// Only continue working with client if registration/initialization is successful
 	if err == nil {
-		// PrintSocketList()
-		// PrettyPrintSyncMap(GetRoomState())
+		// util.PrettyPrintSyncMap(GetRoomState())
 		for {
-			msg_data := map[string]any{}
+			msg_data := gin.H{}
 			err := client_s.WsConn.ReadJSON(&msg_data)
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
@@ -100,7 +134,7 @@ func WsHandler(c *gin.Context) {
 				break // Exit the loop if the connection has an error or is closed
 			}
 
-			log.Println("Recv:", msg_data)
+			w.HandleSocketEvent(client_s, msg_data)
 		}
 	}
 	// Handle disconnection to cleanup socket and room states

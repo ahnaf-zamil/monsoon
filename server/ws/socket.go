@@ -4,19 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
 type Socket struct {
-	ID     string
-	Rooms  map[string]bool
-	UserID string // Optional, socket will get it after they authenticate
-	WsConn *websocket.Conn
+	ID            string
+	Rooms         map[string]bool
+	UserID        string // Optional, socket will get it after they authenticate
+	WsConn        *websocket.Conn
+	LastHeartbeat time.Time
 }
 
 var (
 	socketList []*Socket
+	mu         sync.RWMutex
 	roomState  sync.Map
 )
 
@@ -32,10 +35,13 @@ func PrintSocketList() {
 }
 
 func AddSocketToList(client_s *Socket) {
+	mu.RLock()
 	socketList = append(socketList, client_s)
+	mu.RUnlock()
 }
 
 func RemoveSocketFromList(client_s *Socket) {
+	mu.RLock()
 	newSList := []*Socket{}
 
 	for _, s := range socketList {
@@ -45,6 +51,7 @@ func RemoveSocketFromList(client_s *Socket) {
 	}
 
 	socketList = newSList
+	mu.RUnlock()
 }
 
 func GetRoomState() *sync.Map {

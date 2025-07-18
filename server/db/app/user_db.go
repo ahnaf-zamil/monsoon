@@ -170,8 +170,7 @@ func (u *UserDB) CreateUserSession(ctx context.Context, sessionID int64, userID 
 }
 
 func (u *UserDB) GetSessionByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserSessionModel, error) {
-	/* This function queries user based on OR query for multiple fields */
-	// TODO:
+	/* This function queries user session based on OR query for multiple fields */
 
 	// Separate the fields and respective values into properly sequenced slices for later use in query generation
 	field_arr := []db.UserColumn{}

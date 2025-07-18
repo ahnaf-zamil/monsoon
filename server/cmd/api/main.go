@@ -69,7 +69,12 @@ func main() {
 	if !(conf.IsDev) {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	r.GET("/ws", ws.WsHandler)
+
+	controller.InitControllers(r)
+
+	wsHandler := ws.GetWebSocketHandler()
+	r.GET("/ws", wsHandler.ConnectionHandler)
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173", "https://monsoon.ahnafzamil.com"},
 		AllowHeaders:     []string{"*"},
@@ -77,11 +82,11 @@ func main() {
 		MaxAge:           24 * 7 * time.Hour,
 	}))
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	controller.InitControllers(r)
 
 	// Here we go
 	log.Println("Server started on port", conf.Port)
 
+	wsHandler.StartHeartbeat()
 	err = http.ListenAndServe("0.0.0.0:"+conf.Port, r)
 	if err != nil {
 		log.Println("Error starting server:", err)
