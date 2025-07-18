@@ -7,13 +7,13 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 import { SocketProvider } from "./context/SocketContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  // <StrictMode>
+    // <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <SocketProvider>
-          <App />
-        </SocketProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  // </StrictMode>
+        <AuthProvider>
+            <SocketProvider>
+                <App />
+            </SocketProvider>
+        </AuthProvider>
+    </BrowserRouter>,
+    // </StrictMode>
 );

@@ -5,20 +5,20 @@ import { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 export const Home: React.FC = () => {
-  const user = useContext(AuthContext);
+    const user = useContext(AuthContext);
 
-  useEffect(() => {
-    if (user) {
-      // Do homepage stuff here
-    }
-  }, []);
+    useEffect(() => {
+        if (user) {
+            // Do homepage stuff here
+        }
+    }, []);
 
-  return (
-    <>
-      <div className="flex bg-darkbg max-h-svh">
-        <Sidebar />
-        <Chat />
-      </div>
-    </>
-  );
+    return (
+        <>
+            <div className="flex bg-darkbg max-h-svh">
+                <Sidebar />
+                <Chat />
+            </div>
+        </>
+    );
 };

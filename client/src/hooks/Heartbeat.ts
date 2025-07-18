@@ -1,40 +1,74 @@
 import type { IWebSocketDispatch, IHeartbeatInit } from "../ws/types";
 import { OPCODES } from "../ws/opcodes";
 import { dispatchWebSocketEvent } from "../ws/events";
+import { useEffect, useRef } from "react";
+import { log } from "../utils";
 
-let isHeartbeating = false;
-let heartbeatTimeoutId: ReturnType<typeof setTimeout> | null = null;
+export function useWSHeartbeat(
+    socket: WebSocket | null,
+    onDisconnect: () => void,
+) {
+    const intervalRef = useRef<number | null>(null);
+    const timeoutRef = useRef<number | null>(null);
+    const cleanup = () => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+    };
 
-export const useWSHeartbeat = (socket: WebSocket | null) => {
-  if (!socket) return;
-  if (isHeartbeating) return;
+    useEffect(() => {
+        if (!socket) return;
 
-  const onMessage = (e: MessageEvent) => {
-    const payload: IWebSocketDispatch<IHeartbeatInit> = JSON.parse(e.data);
-    if (payload.opcode == OPCODES.HeartbeatInit) {
-      console.log(
-        `Starting heartbeat with ${payload.data.interval}ms interval`
-      );
+        const handleMessage = (e: MessageEvent) => {
+            const payload: IWebSocketDispatch<IHeartbeatInit> = JSON.parse(
+                e.data,
+            );
+            if (payload.opcode == OPCODES.HeartbeatInit) {
+                log("info", "heartbeat started");
 
-      setInterval(() => {
-        if (heartbeatTimeoutId) clearTimeout(heartbeatTimeoutId);
-        heartbeatTimeoutId = setTimeout(() => {
-          console.warn("No heartbeat ack received within timeout. Disconnecting...");
-          isHeartbeating = false;
-          socket.close(); // Implement reconnect later
-        }, payload.data.timeout);
+                // cleanup any old loop
+                cleanup();
 
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-        dispatchWebSocketEvent(socket, OPCODES.Heartbeat, null);
-        console.log("Dispatched heartbeat");
-      }, payload.data.interval);
-      isHeartbeating = true;
+                // start heartbeat loop
+                intervalRef.current = setInterval(() => {
+                    if (!socket.OPEN) return;
 
-    } else if (payload.opcode == OPCODES.HeartbeatAck) {
-      console.log("Heartbeat ack received");
-      if (heartbeatTimeoutId) clearTimeout(heartbeatTimeoutId);
-    }
-  };
+                    dispatchWebSocketEvent(socket, OPCODES.Heartbeat, null);
+                    log("debug", "heartbeat sent");
 
-  socket.addEventListener("message", onMessage);
-};
+                    // only set timeout if not already set
+                    if (!timeoutRef.current) {
+                        timeoutRef.current = setTimeout(() => {
+                            log(
+                                "warn",
+                                "no heartbeat ACK received within timeout",
+                            );
+                            cleanup();
+                            onDisconnect();
+                        }, payload.data.timeout);
+                    }
+                }, payload.data.interval);
+            }
+
+            if (payload.opcode == OPCODES.HeartbeatAck) {
+                log("debug", "heartbeat ack received");
+
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                }
+            }
+        };
+
+        socket.addEventListener("message", handleMessage);
+        return () => {
+            socket.removeEventListener("message", handleMessage);
+            cleanup();
+        };
+    }, [socket, onDisconnect]);
+}
