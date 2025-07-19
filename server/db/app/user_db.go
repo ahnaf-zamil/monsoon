@@ -106,7 +106,7 @@ func (u *UserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn
 	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
 	row := u.AppDB.DBPool.QueryRow(ctx, query, value_arr...)
 	var user api.UserModel
-	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.Email, &user.Password)
+	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.CreatedAt, &user.Email, &user.PasswordHash)
 	if errors.Is(err, pgx.ErrNoRows) {
 		// Return nil if no rows
 		return nil, nil

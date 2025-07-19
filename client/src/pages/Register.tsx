@@ -16,10 +16,10 @@ export const Register: React.FC = () => {
     const navigate = useNavigate();
     const currentUser = useContext(AuthContext);
 
-    const [username, setUsername] = useState<string>("");
-    const [displayName, setDisplayName] = useState<string>("");
-    const [email, setEmail] = useState<string>("");
-    const [password, setPassword] = useState<string>("");
+    const [username, setUsername] = useState<string>("123");
+    const [displayName, setDisplayName] = useState<string>("123");
+    const [email, setEmail] = useState<string>("ok@ok.ok");
+    const [password, setPassword] = useState<string>("123");
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -41,14 +41,12 @@ export const Register: React.FC = () => {
             const pwHash = await CryptoHelper.deriveKey(password, authSalt);
             const encKey = await CryptoHelper.deriveKey(password, encSalt);
 
-            const key = await CryptoHelper.importAESKey(encKey.buffer);
             const nonce = nacl.randomBytes(12); // 12 byte nonce
             const encryptedSeed = await CryptoHelper.AESGCMEncrypt(
-                key,
+                encKey,
                 nonce,
-                seed,
+                seed
             );
-
             const resp = await createUser(
                 username,
                 displayName,
@@ -63,12 +61,12 @@ export const Register: React.FC = () => {
                 },
                 encodeBase64(pwHash),
                 encodeBase64(encryptedSeed),
-                encodeBase64(nonce),
+                encodeBase64(nonce)
             );
-            if (!isAxiosError(resp)) {
+            if (!resp.error) {
                 window.location.href = "/";
             } else {
-                switch (resp.response?.status) {
+                switch (resp.status) {
                     case 400:
                         setError("Bad request");
                         break;
@@ -81,6 +79,7 @@ export const Register: React.FC = () => {
                 }
             }
         } catch (e) {
+            console.error(e);
             setError("An error occured while registering");
         }
     };

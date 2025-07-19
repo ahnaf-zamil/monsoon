@@ -28,25 +28,21 @@ export const createUser = async (
     pwHash: string,
     encSeed: string,
     nonce: string,
-): Promise<any> => {
-    try {
-        const response = await apiClient.post("/user/create", {
-            username,
-            display_name: displayName,
-            email,
-            pub_keys: pub_keys,
-            salts: {
-                enc_salt: salts.encSalt,
-                pw_salt: salts.pwSalt,
-            },
-            pw_hash: pwHash,
-            enc_seed: encSeed,
-            nonce: nonce,
-        });
-        return response.data;
-    } catch (error) {
-        return error;
-    }
+): Promise<IAPIResponse> => {
+    const response = await apiClient.post("/user/create", {
+        username,
+        display_name: displayName,
+        email,
+        pub_keys: pub_keys,
+        salts: {
+            enc_salt: salts.encSalt,
+            pw_salt: salts.pwSalt,
+        },
+        pw_hash: pwHash,
+        enc_seed: encSeed,
+        nonce: nonce,
+    });
+    return response.data;
 };
 
 export const getAuthenticatedUser = async (): Promise<IAPIResponse> => {

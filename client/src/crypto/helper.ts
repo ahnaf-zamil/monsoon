@@ -1,23 +1,23 @@
+
+
 import nacl from "tweetnacl";
 import { ed25519SeedToX25519PrivateKey } from "./keys";
 import { encodeBase64 } from "tweetnacl-util";
+import argon2 from 'argon2-browser';
 
 export class CryptoHelper {
-    static importAESKey = async (rawKey: ArrayBuffer): Promise<CryptoKey> => {
-        return await crypto.subtle.importKey(
+    static AESGCMEncrypt = async (
+        key: Uint8Array,
+        nonce: Uint8Array,
+        plaintext: Uint8Array
+    ): Promise<Uint8Array> => {
+        const cryptoKey = await crypto.subtle.importKey(
             "raw",
-            rawKey,
+            key as BufferSource,
             { name: "AES-GCM" },
             false,
-            ["encrypt", "decrypt"],
+            ["encrypt"]
         );
-    };
-
-    static AESGCMEncrypt = async (
-        cryptoKey: CryptoKey,
-        nonce: Uint8Array,
-        plaintext: Uint8Array,
-    ): Promise<Uint8Array> => {
         const encryptedBuffer = await crypto.subtle.encrypt(
             {
                 name: "AES-GCM",
@@ -25,33 +25,27 @@ export class CryptoHelper {
                 tagLength: 128,
             },
             cryptoKey,
-            plaintext as BufferSource,
+            plaintext as BufferSource
         );
 
         return new Uint8Array(encryptedBuffer);
     };
 
-    static deriveKey = async (password: string, salt: Uint8Array) => {
-        const keyMaterial = await window.crypto.subtle.importKey(
-            "raw",
-            new TextEncoder().encode(password),
-            { name: "PBKDF2" },
-            false,
-            ["deriveBits"],
-        );
-
-        const derivedBits = await window.crypto.subtle.deriveBits(
-            {
-                name: "PBKDF2",
-                salt: salt as BufferSource,
-                iterations: 150000,
-                hash: "SHA-256",
-            },
-            keyMaterial,
-            32 * 8,
-        );
-
-        return new Uint8Array(derivedBits);
+    static deriveKey = async (
+        password: string,
+        salt: Uint8Array
+    ): Promise<Uint8Array> => {
+        /* Derive Argon2 key using salt and password */
+        const res = await argon2.hash({
+            pass: password,
+            salt: salt,
+            time: 1,
+            mem: 1024, // KiB
+            hashLen: 32, // bytes
+            parallelism: 1,
+            type: argon2.ArgonType.Argon2id,
+        });
+        return res.hash;
     };
 
     static generateClientKeyPair = (seed: Uint8Array<ArrayBufferLike>) => {
