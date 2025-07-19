@@ -2,7 +2,6 @@ import type React from "react";
 import MonsoonLogo from "../static/img/monsoon_logo.png";
 import { useContext, useEffect, useState } from "react";
 import { createUser } from "../api/auth";
-import { isAxiosError } from "axios";
 import { PiPasswordBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
