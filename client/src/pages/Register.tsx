@@ -1,18 +1,23 @@
 import type React from "react";
 import MonsoonLogo from "../static/img/monsoon_logo.png";
 import { useContext, useEffect, useState } from "react";
-import { isEmptyString } from "../util";
-import { loginUser } from "../api/auth";
+import { createUser } from "../api/auth";
 import { isAxiosError } from "axios";
 import { PiPasswordBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { FiMail } from "react-icons/fi";
+import { FiMail, FiUser } from "react-icons/fi";
+import nacl from "tweetnacl";
+import { CryptoHelper } from "../crypto/helper";
+import { encodeBase64 } from "tweetnacl-util";
+import { FaRegAddressCard } from "react-icons/fa";
 
-export const Login: React.FC = () => {
+export const Register: React.FC = () => {
     const navigate = useNavigate();
     const currentUser = useContext(AuthContext);
 
+    const [username, setUsername] = useState<string>("");
+    const [displayName, setDisplayName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
@@ -26,9 +31,40 @@ export const Login: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!isEmptyString(email) && !isEmptyString(password)) {
-            // Login user here
-            const resp = await loginUser(email, password);
+        try {
+            const seed = nacl.randomBytes(32);
+            const keys = CryptoHelper.generateClientKeyPair(seed);
+
+            const authSalt = nacl.randomBytes(32);
+            const encSalt = nacl.randomBytes(32);
+
+            const pwHash = await CryptoHelper.deriveKey(password, authSalt);
+            const encKey = await CryptoHelper.deriveKey(password, encSalt);
+
+            const key = await CryptoHelper.importAESKey(encKey.buffer);
+            const nonce = nacl.randomBytes(12); // 12 byte nonce
+            const encryptedSeed = await CryptoHelper.AESGCMEncrypt(
+                key,
+                nonce,
+                seed,
+            );
+
+            const resp = await createUser(
+                username,
+                displayName,
+                email,
+                {
+                    sig: keys.ed.pub,
+                    enc: keys.x.pub,
+                },
+                {
+                    encSalt: encodeBase64(encSalt),
+                    pwSalt: encodeBase64(authSalt),
+                },
+                encodeBase64(pwHash),
+                encodeBase64(encryptedSeed),
+                encodeBase64(nonce),
+            );
             if (!isAxiosError(resp)) {
                 window.location.href = "/";
             } else {
@@ -44,12 +80,13 @@ export const Login: React.FC = () => {
                         break;
                 }
             }
+        } catch (e) {
+            setError("An error occured while registering");
         }
     };
 
     return (
         <div className="flex justify-center items-center flex-col h-[calc(100svh)] dark:bg-black">
-            {/* <h1 className="text-teal-400 font-bold text-4xl mb-6">Monsoon</h1> */}
             <img src={MonsoonLogo} className="w-84 pointer-none mb-2" alt="" />
             <div className="flex justify-center items-center ">
                 <form
@@ -62,6 +99,44 @@ export const Login: React.FC = () => {
                         </p>
                     )}
                     <div className="grid gap-5">
+                        <div className="grid gap-1">
+                            <label htmlFor="username" className="sr-only">
+                                Username
+                            </label>
+                            <div className="flex w-full rounded-md dark:bg-neutral-800 items-center justify-center">
+                                <FiUser className="text-xl mx-2 text-primary-text" />
+                                <input
+                                    type="text"
+                                    className="outline-none rounded-md flex-grow pr-4 py-2 placeholder:text-neutral-600 dark:placeholder:text-neutral-500 dark:text-white"
+                                    placeholder="Username"
+                                    id="username"
+                                    required={true}
+                                    value={username}
+                                    onChange={(e) =>
+                                        setUsername(e.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div className="grid gap-1">
+                            <label htmlFor="username" className="sr-only">
+                                Display Name
+                            </label>
+                            <div className="flex w-full rounded-md dark:bg-neutral-800 items-center justify-center">
+                                <FaRegAddressCard className="text-xl mx-2 text-primary-text" />
+                                <input
+                                    type="text"
+                                    className="outline-none rounded-md flex-grow pr-4 py-2 placeholder:text-neutral-600 dark:placeholder:text-neutral-500 dark:text-white"
+                                    placeholder="Display Name"
+                                    id="displayname"
+                                    required={true}
+                                    value={displayName}
+                                    onChange={(e) =>
+                                        setDisplayName(e.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
                         <div className="grid gap-1">
                             <label htmlFor="email" className="sr-only">
                                 Email
@@ -98,16 +173,19 @@ export const Login: React.FC = () => {
                                 />
                             </div>
                         </div>
-                        <button className="hover:cursor-pointer hover:bg-primary-darker bg-primary p-2 rounded-md  flex justify-center text-black">
-                            Log in
+                        <button
+                            onClick={(e) => handleSubmit(e as any)}
+                            className="hover:cursor-pointer hover:bg-primary-darker bg-primary p-2 rounded-md  flex justify-center text-black"
+                        >
+                            Create Account
                         </button>
                         <p className="text-primary-text text-center">
-                            Don't have an account?{" "}
+                            Already have an account?{" "}
                             <a
                                 className="cursor-pointer text-secondary-text"
-                                onClick={() => navigate("/register")}
+                                onClick={() => navigate("/login")}
                             >
-                                Create one
+                                Log In
                             </a>
                         </p>
                     </div>

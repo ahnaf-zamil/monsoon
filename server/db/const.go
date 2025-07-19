@@ -14,6 +14,7 @@ const (
 	TableUsers        string = "users"
 	TableAuth         string = "users_auth"
 	TableUsersSession string = "users_session"
+	TableUsersKey     string = "users_key"
 )
 
 var (
@@ -30,4 +31,8 @@ var (
 	ColSessionUserID       UserColumn = UserColumn{"user_id", TableUsersSession}
 	ColSessionRefreshToken UserColumn = UserColumn{"refresh_token", TableUsersSession}
 	ColSessionCreatedAt    UserColumn = UserColumn{"created_at", TableUsersSession}
+
+	ColKeyUserID UserColumn = UserColumn{"session_id", TableUsersKey}
+	ColKeyEncKey UserColumn = UserColumn{"pub_enc_key", TableUsersKey}
+	ColKeySigKey UserColumn = UserColumn{"pub_sig_key", TableUsersKey}
 )

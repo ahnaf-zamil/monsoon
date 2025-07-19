@@ -18,7 +18,7 @@ type UserDB struct {
 
 // Will be stubbed during testing
 type IUserDB interface {
-	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error
+	CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, keyEnc []byte, keySig []byte, pwSalt []byte, encSalt []byte, encSeed []byte, nonce []byte) error
 	GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserModel, error)
 	UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error
 	CreateUserSession(ctx context.Context, sessionID int64, userID int64, refreshToken string) error
@@ -33,10 +33,10 @@ func GetUserDB() *UserDB {
 	return user_db
 }
 
-func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error {
-	/* Service function to create a user */
+func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte, keyEnc []byte, keySig []byte, pwSalt []byte, encSalt []byte, encSeed []byte, nonce []byte) error {
+	/* Service function to create a user
+	 */
 
-	// TODO: Separate DB functionality like insert, delete, etc. into separate functions
 	tx, err := u.AppDB.DBPool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
@@ -56,10 +56,17 @@ func (u *UserDB) CreateUser(ctx context.Context, id int64, username, displayName
 	}
 
 	// Insert user auth data into the auth table
-	err = insertUserAuth(tx, ctx, id, email, string(password))
+	err = insertUserAuth(tx, ctx, id, email, password, pwSalt, encSalt, encSeed, nonce)
 	if err != nil {
 		return err
 	}
+
+	// Insert user's signature and encryption key in key table
+	err = insertUserKey(tx, ctx, id, keyEnc, keySig)
+	if err != nil {
+		return err
+	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		log.Println("TX commit error:", err)
@@ -210,20 +217,31 @@ func (u *UserDB) GetSessionByAnyField(ctx context.Context, fields map[db.UserCol
 	}
 }
 
+func (u *UserDB) GetUserAuthByID(ctx context.Context, userID string) (*api.UserAuthModel, error) {
+	// TODO: implement later
+	return nil, nil
+}
+
 func insertUser(tx pgx.Tx, ctx context.Context, id int64, username, display_name string, created_at int64, updated_at int64) error {
 	query := fmt.Sprintf("INSERT INTO %s (id, username, display_name, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)", db.TableUsers)
 	_, err := tx.Exec(ctx, query, id, username, display_name, created_at, updated_at)
 	return err
 }
 
-func insertUserAuth(tx pgx.Tx, ctx context.Context, id int64, email, pw_hash string) error {
-	query := fmt.Sprintf("INSERT INTO %s (id, email, pw_hash) VALUES ($1, $2, $3)", db.TableAuth)
-	_, err := tx.Exec(ctx, query, id, email, pw_hash)
+func insertUserAuth(tx pgx.Tx, ctx context.Context, id int64, email string, pw_hash []byte, pwSalt []byte, encSalt []byte, encSeed []byte, nonce []byte) error {
+	query := fmt.Sprintf("INSERT INTO %s (id, email, pw_hash, pw_salt, enc_salt, key_seed_cipher, nonce) VALUES ($1, $2, $3, $4, $5, $6, $7)", db.TableAuth)
+	_, err := tx.Exec(ctx, query, id, email, pw_hash, pwSalt, encSalt, encSeed, nonce)
 	return err
 }
 
 func insertUserSession(tx pgx.Tx, ctx context.Context, sessionID int64, userID int64, refreshToken string, sessionCreated int64) error {
 	query := fmt.Sprintf("INSERT INTO %s (session_id, user_id, refresh_token, created_at) VALUES ($1, $2, $3, $4)", db.TableUsersSession)
 	_, err := tx.Exec(ctx, query, sessionID, userID, refreshToken, sessionCreated)
+	return err
+}
+
+func insertUserKey(tx pgx.Tx, ctx context.Context, userID int64, keyEnc []byte, keySig []byte) error {
+	query := fmt.Sprintf("INSERT INTO %s (user_id, pub_sig_key, pub_enc_key) VALUES ($1, $2, $3)", db.TableUsersKey)
+	_, err := tx.Exec(ctx, query, userID, keySig, keyEnc)
 	return err
 }

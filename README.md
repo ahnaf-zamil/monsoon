@@ -68,7 +68,10 @@ API Docs at `http://localhost:9000/swagger/index.html`
 - Set up separate DB for persisting messages
 - Separate "groups" and "dm" in WebSocket rooms state
 - Implement message bucketing and partitons
-- And more...
+- Implement getter method for user auth
+- Reimplement login route
+- Clean up register route controller
+- Implement login features on client: Fetching encrypted seed, deriving keys from password, deriving signing and encryption keypair on login.
 
 ## License
 

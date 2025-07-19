@@ -27,3 +27,13 @@ type UserSessionModel struct {
 	RefreshToken string
 	CreatedAt    int64
 }
+
+type UserAuthModel struct {
+	UserID         string
+	Email          string
+	PasswordHash   []byte
+	PasswordSalt   []byte
+	EncryptionSalt []byte
+	EncryptedSeed  []byte
+	Nonce          []byte
+}

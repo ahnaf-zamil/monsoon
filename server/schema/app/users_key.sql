@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS users_key (
+  user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  pub_sig_key BYTEA NOT NULL,
+  pub_enc_key BYTEA NOT NULL
+)

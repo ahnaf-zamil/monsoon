@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/base64"
 	"monsoon/api"
 	"monsoon/db"
 	"monsoon/db/app"
@@ -39,6 +40,49 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 		return
 	}
 
+	// Validate encryption and signature key base64
+	encKey, err := base64.StdEncoding.DecodeString(req.Keys.Enc)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		return
+	}
+
+	sigKey, err := base64.StdEncoding.DecodeString(req.Keys.Sig)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		return
+	}
+
+	pwHash, err := base64.StdEncoding.DecodeString(req.PasswordHash)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		return
+	}
+
+	encryptedSeed, err := base64.StdEncoding.DecodeString(req.EncryptedSeed)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		return
+	}
+
+	nonce, err := base64.StdEncoding.DecodeString(req.Nonce)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		return
+	}
+
+	encryptionSalt, err := base64.StdEncoding.DecodeString(req.Salts.Enc)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		return
+	}
+
+	authSalt, err := base64.StdEncoding.DecodeString(req.Salts.Auth)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
+		return
+	}
+
 	// Checks if another user already exists with EITHER the same username OR same email
 	fields := map[db.UserColumn]any{
 		db.ColUserEmail:    req.Email,
@@ -56,26 +100,16 @@ func (ctrl *UserController) UserCreateRoute(c *gin.Context) {
 	}
 
 	userId := lib.GenerateSnowflakeID()
-	pwHash, err := ctrl.PasswordHasher.Hash(req.Password)
-	if err != nil {
-		util.HandleServerError(c, rs, err)
-		return
-	}
-
-	// // Refresh token expires after 7 days, gets stored in DB
-	// rnd_code, _ := util.RandomBase16String(32)
-	// refreshToken, err := ctrl.TokenHelper.CreateNewToken(rnd_code, 86400*7)
-	// if err != nil {
-	// 	util.HandleServerError(c, rs, err)
-	// 	return
-	// }
 
 	// Creating the user here
-	err = ctrl.UserDB.CreateUser(c.Request.Context(), userId.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pwHash)
+	err = ctrl.UserDB.CreateUser(c.Request.Context(), userId.Int64(), strings.ToLower(req.Username), req.DisplayName, req.Email, pwHash, encKey, sigKey, authSalt, encryptionSalt, encryptedSeed, nonce)
 	if err != nil {
 		util.HandleServerError(c, rs, err)
 		return
 	}
+
+	// TODO: Generate public key hashes and store in Merkle tree for later verification
+
 	util.WriteAPIResponse(c, user, rs, http.StatusCreated)
 }
 
