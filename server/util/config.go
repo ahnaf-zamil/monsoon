@@ -29,7 +29,7 @@ func LoadConfig() *Config {
 
 	allowedOrigins := []string{os.Getenv("CLIENT_ORIGIN")}
 	if IsDev {
-		allowedOrigins = append(allowedOrigins, "localhost:5173") // Frontend dev server port
+		allowedOrigins = append(allowedOrigins, "http://localhost:5173") // Frontend dev server port
 	}
 
 	config = &Config{

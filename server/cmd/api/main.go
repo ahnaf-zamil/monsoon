@@ -74,7 +74,7 @@ func main() {
 	}
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "https://monsoon.ahnafzamil.com"},
+		AllowOrigins:     conf.AllowedOrigins,
 		AllowHeaders:     []string{"content-type", "authorization"},
 		AllowMethods:     []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
 		AllowCredentials: true,
