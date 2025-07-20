@@ -28,8 +28,11 @@ import (
 //	@contact.name	Author
 //	@contact.url	https://ahnafzamil.com/contact
 //	@contact.email	ahnaf@ahnafzamil.com
+//  @license.name	AGPL-3.0
+// 	@license.url	https://www.gnu.org/licenses/agpl-3.0.en.html
 // 	@BasePath /api
 
+// @produce json
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization

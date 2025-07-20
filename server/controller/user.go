@@ -20,7 +20,7 @@ type UserController struct {
 // @Success      200      {object}  api.APIResponse
 // @Failure      401      {object}  api.APIResponse
 // @Router       /user/me [post]
-// @Security    BearerAuth
+// @Security     BearerAuth
 func (ctrl *UserController) UserGetCurrent(c *gin.Context) {
 	rs := &api.APIResponse{}
 	user, ok := util.GetCurrentUser(c)

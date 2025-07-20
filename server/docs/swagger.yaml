@@ -67,17 +67,24 @@ definitions:
     - pw_hash
     - username
     type: object
+  api.UserLoginSaltSchema:
+    properties:
+      email:
+        example: john@doe.com
+        type: string
+    required:
+    - email
+    type: object
   api.UserLoginSchema:
     properties:
       email:
         example: john@doe.com
         type: string
-      password:
-        example: ilovejanedoe
+      pw_hash:
         type: string
     required:
     - email
-    - password
+    - pw_hash
     type: object
 info:
   contact:
@@ -85,9 +92,111 @@ info:
     name: Author
     url: https://ahnafzamil.com/contact
   description: REST API and WebSocket server for Monsoon
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.en.html
   title: Monsoon API
   version: 0.0.1
 paths:
+  /auth/create:
+    post:
+      consumes:
+      - application/json
+      description: User creation/registration route
+      parameters:
+      - description: User info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserCreateSchema'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      summary: Create a new user
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Log into user account
+      parameters:
+      - description: User credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserLoginSchema'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      summary: Login user
+      tags:
+      - auth
+  /auth/salt:
+    post:
+      consumes:
+      - application/json
+      description: Get a user's salt by email
+      parameters:
+      - description: User email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserLoginSaltSchema'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      summary: User salt
+      tags:
+      - auth
+  /auth/token:
+    post:
+      description: Retrieve authentication access token for authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      summary: Get Access Token
+      tags:
+      - auth
   /message/user/{recipientId}:
     post:
       consumes:
@@ -121,66 +230,6 @@ paths:
       summary: Directly Message a User
       tags:
       - messages
-  /user/create:
-    post:
-      consumes:
-      - application/json
-      description: User creation/registration route
-      parameters:
-      - description: User info
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/api.UserCreateSchema'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-      summary: Create a new user
-      tags:
-      - users
-  /user/login:
-    post:
-      consumes:
-      - application/json
-      description: User authentication route
-      parameters:
-      - description: User credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/api.UserLoginSchema'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-      summary: Login User
-      tags:
-      - users
   /user/me:
     post:
       description: Currently authenticated user route
@@ -200,23 +249,8 @@ paths:
       summary: Get Current User
       tags:
       - users
-  /user/token:
-    post:
-      description: Retrieve authentication access token for authenticated user
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-      summary: Get Access Token
-      tags:
-      - users
+produces:
+- application/json
 securityDefinitions:
   BearerAuth:
     in: header
