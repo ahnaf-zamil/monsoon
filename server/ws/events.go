@@ -42,7 +42,7 @@ func (w *WebSocketHandler) StartHeartbeat() {
 }
 
 func (w *WebSocketHandler) HandleClientHeartbeat(socket *Socket) {
+	// Respond with heartbeat ack
 	socket.LastHeartbeat = time.Now()
-	log.Println("Socket", socket.ID, "has sent heartbeat")
-	w.DispatchEvent(socket, OpHeartbeatAck, nil)
+	_ = w.DispatchEvent(socket, OpHeartbeatAck, nil)
 }

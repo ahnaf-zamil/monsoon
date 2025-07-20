@@ -3,21 +3,17 @@
 [![Server CI](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/server-ci.yml/badge.svg)](https://github.com/ahnaf-zamil/ws_rt_app/actions/workflows/server-ci.yml)
 ![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)
 
+Monsoon is a secure, scalable, end-to-end encrypted messaging platform designed with a zero-trust architecture. It features client-side key generation and cryptographic operations to ensure that raw passwords and private keys never leave the user's device.
+
 ## Technology
 
-```
-- Go (Gin-Gonic, Gorilla/Websocket)
-- TypeScript (React, Tailwind)
-- NATS
-- PostgreSQL
-```
+- Backend: `Go, Gin, NATS, WebSocket, PostgreSQL`
+- Frontend: `TypeScript, React, Web Crypto API`
+- Cryptography: `TweetNaCl, Ed25519, X25519, AES-GCM, Argon2`
 
 ## Features
 
-- Threadsafe global client state for keeping track of sockets
-- In-memory "Rooms" implementation for group chats
-- Uses NATS for dispatching new messages to other server instances
-- JWT-based authentication
+TODO: Write features
 
 ## Usage
 
@@ -68,10 +64,7 @@ API Docs at `http://localhost:9000/swagger/index.html`
 - Set up separate DB for persisting messages
 - Separate "groups" and "dm" in WebSocket rooms state
 - Implement message bucketing and partitons
-- Implement getter method for user auth
-- Reimplement login route
-- Clean up register route controller
-- Implement login features on client: Fetching encrypted seed, deriving keys from password, deriving signing and encryption keypair on login.
+- Store key seed on client side (Possibly in SessionStorage with BroadcastChannel for inter-tab communication?)
 
 ## License
 

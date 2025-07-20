@@ -70,17 +70,19 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173", "https://monsoon.ahnafzamil.com"},
+		AllowHeaders:     []string{"content-type", "authorization"},
+		AllowMethods:     []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
+		AllowCredentials: true,
+		MaxAge:           24 * 7 * time.Hour,
+	}))
+
 	controller.InitControllers(r)
 
 	wsHandler := ws.GetWebSocketHandler()
 	r.GET("/ws", wsHandler.ConnectionHandler)
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "https://monsoon.ahnafzamil.com"},
-		AllowHeaders:     []string{"*"},
-		AllowCredentials: true,
-		MaxAge:           24 * 7 * time.Hour,
-	}))
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Here we go

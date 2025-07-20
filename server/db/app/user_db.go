@@ -23,7 +23,7 @@ type IUserDB interface {
 	UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error
 	CreateUserSession(ctx context.Context, sessionID int64, userID int64, refreshToken string) error
 	GetSessionByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserSessionModel, error)
-
+	GetUserAuthByID(ctx context.Context, userID string) (*api.UserAuthModel, error)
 	// Util
 	GetUserByID(c context.Context, userID string) (*api.UserModel, error)
 }
@@ -219,7 +219,27 @@ func (u *UserDB) GetSessionByAnyField(ctx context.Context, fields map[db.UserCol
 
 func (u *UserDB) GetUserAuthByID(ctx context.Context, userID string) (*api.UserAuthModel, error) {
 	// TODO: implement later
-	return nil, nil
+	cols := []db.UserColumn{db.ColAuthUserID, db.ColAuthPasswordHash, db.ColAuthPasswordSalt, db.ColAuthEncryptionSalt, db.ColAuthEncryptedSeed, db.ColAuthNonce}
+	selected_columns := db.GenerateDBQueryFields(cols)
+
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1",
+		selected_columns,
+		db.TableAuth, db.ColAuthUserID.Column)
+	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
+	row := u.AppDB.DBPool.QueryRow(ctx, query, userID)
+	var authModel api.UserAuthModel
+	err := row.Scan(&authModel.UserID, &authModel.PasswordHash, &authModel.PasswordSalt, &authModel.EncryptionSalt, &authModel.EncryptedSeed, &authModel.Nonce)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		// Return nil if no rows
+		return nil, nil
+	} else if err != nil {
+		// If there's error, just return error
+		return nil, err
+	} else {
+		// Else, just return user
+		return &authModel, nil
+	}
 }
 
 func insertUser(tx pgx.Tx, ctx context.Context, id int64, username, display_name string, created_at int64, updated_at int64) error {

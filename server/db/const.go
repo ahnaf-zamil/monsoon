@@ -35,4 +35,11 @@ var (
 	ColKeyUserID UserColumn = UserColumn{"session_id", TableUsersKey}
 	ColKeyEncKey UserColumn = UserColumn{"pub_enc_key", TableUsersKey}
 	ColKeySigKey UserColumn = UserColumn{"pub_sig_key", TableUsersKey}
+
+	ColAuthUserID         UserColumn = UserColumn{"id", TableAuth}
+	ColAuthPasswordHash   UserColumn = UserColumn{"pw_hash", TableAuth}
+	ColAuthPasswordSalt   UserColumn = UserColumn{"pw_salt", TableAuth}
+	ColAuthEncryptionSalt UserColumn = UserColumn{"enc_salt", TableAuth}
+	ColAuthEncryptedSeed  UserColumn = UserColumn{"key_seed_cipher", TableAuth}
+	ColAuthNonce          UserColumn = UserColumn{"nonce", TableAuth}
 )

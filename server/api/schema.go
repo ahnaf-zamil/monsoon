@@ -32,7 +32,11 @@ type UserCreateSchema struct {
 	Nonce         string `json:"nonce" binding:"required"`
 }
 
+type UserLoginSaltSchema struct {
+	Email string `json:"email" binding:"required,email" example:"john@doe.com"`
+}
+
 type UserLoginSchema struct {
-	Email    string `json:"email" binding:"required,email" example:"john@doe.com"`
-	Password string `json:"password" binding:"required" example:"ilovejanedoe"`
+	Email        string `json:"email" binding:"required,email" example:"john@doe.com"`
+	PasswordHash string `json:"pw_hash" binding:"required"`
 }

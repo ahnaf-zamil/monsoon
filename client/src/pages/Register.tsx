@@ -44,7 +44,7 @@ export const Register: React.FC = () => {
             const encryptedSeed = await CryptoHelper.AESGCMEncrypt(
                 encKey,
                 nonce,
-                seed
+                seed,
             );
             const resp = await createUser(
                 username,
@@ -60,7 +60,7 @@ export const Register: React.FC = () => {
                 },
                 encodeBase64(pwHash),
                 encodeBase64(encryptedSeed),
-                encodeBase64(nonce)
+                encodeBase64(nonce),
             );
             if (!resp.error) {
                 window.location.href = "/";
@@ -71,6 +71,9 @@ export const Register: React.FC = () => {
                         break;
                     case 401:
                         setError("Invalid username/password");
+                        break;
+                    case 409:
+                        setError("User already exists");
                         break;
                     case 500:
                         setError("Internal server error");

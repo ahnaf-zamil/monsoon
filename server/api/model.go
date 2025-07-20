@@ -29,11 +29,11 @@ type UserSessionModel struct {
 }
 
 type UserAuthModel struct {
-	UserID         string
-	Email          string
-	PasswordHash   []byte
-	PasswordSalt   []byte
-	EncryptionSalt []byte
-	EncryptedSeed  []byte
-	Nonce          []byte
+	UserID         string `json:"-"`
+	Email          string `json:"-"`
+	PasswordHash   []byte `json:"-"`
+	PasswordSalt   []byte `json:"-"`
+	EncryptionSalt []byte `json:"enc_salt"`
+	EncryptedSeed  []byte `json:"enc_seed"`
+	Nonce          []byte `json:"nonce"`
 }

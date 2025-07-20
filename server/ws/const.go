@@ -2,9 +2,9 @@ package ws
 
 import "time"
 
-const HEARTBEAT_TIMEOUT = 10 * time.Second
-const HEARTBEAT_CHECK_INTERVAL = 5 * time.Second // Interval for checking for dead clients
-const HEARTBEAT_INTERVAL = 5 * time.Second       // Heartbeat interval sent to client
+const HEARTBEAT_TIMEOUT = 30 * time.Second
+const HEARTBEAT_CHECK_INTERVAL = 30 * time.Second // Interval for checking for dead clients
+const HEARTBEAT_INTERVAL = 30 * time.Second       // Heartbeat interval sent to client
 
 const (
 	OpHeartbeat     EventOpCode = "heartbeat"      // Sent by client to heartbeat

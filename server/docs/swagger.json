@@ -247,7 +247,10 @@
             "required": [
                 "display_name",
                 "email",
-                "password",
+                "enc_seed",
+                "nonce",
+                "pub_keys",
+                "pw_hash",
                 "username"
             ],
             "properties": {
@@ -259,10 +262,45 @@
                     "type": "string",
                     "example": "john@doe.com"
                 },
-                "password": {
-                    "type": "string",
-                    "minLength": 8,
-                    "example": "ilovejanedoe"
+                "enc_seed": {
+                    "type": "string"
+                },
+                "nonce": {
+                    "type": "string"
+                },
+                "pub_keys": {
+                    "description": "Base64 encoded X25519 and ED25519 public keys",
+                    "type": "object",
+                    "required": [
+                        "enc",
+                        "sig"
+                    ],
+                    "properties": {
+                        "enc": {
+                            "type": "string"
+                        },
+                        "sig": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "pw_hash": {
+                    "type": "string"
+                },
+                "salts": {
+                    "type": "object",
+                    "required": [
+                        "enc_salt",
+                        "pw_salt"
+                    ],
+                    "properties": {
+                        "enc_salt": {
+                            "type": "string"
+                        },
+                        "pw_salt": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "username": {
                     "type": "string",

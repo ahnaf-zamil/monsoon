@@ -9,7 +9,7 @@ export default defineConfig({
         alias: {
             "argon2-browser": path.resolve(
                 __dirname,
-                "node_modules/argon2-browser/dist/argon2-bundled.min.js"
+                "node_modules/argon2-browser/dist/argon2-bundled.min.js",
             ),
         },
     },

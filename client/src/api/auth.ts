@@ -1,19 +1,24 @@
 import { apiClient } from "./api";
-import type { IAPIResponse } from "./types";
+import type { IAPIResponse, ILoginData } from "./types";
+
+export const fetchUserSalt = async (
+    email: string,
+): Promise<IAPIResponse<any>> => {
+    const response = await apiClient.post("/auth/salt", {
+        email,
+    });
+    return response.data;
+};
 
 export const loginUser = async (
     email: string,
-    password: string,
-): Promise<any> => {
-    try {
-        const response = await apiClient.post("/user/login", {
-            email,
-            password,
-        });
-        return response.data;
-    } catch (error) {
-        return error;
-    }
+    passwordHash: string,
+): Promise<IAPIResponse<ILoginData>> => {
+    const response = await apiClient.post("/auth/login", {
+        email,
+        pw_hash: passwordHash,
+    });
+    return response.data;
 };
 
 export const createUser = async (
@@ -28,8 +33,8 @@ export const createUser = async (
     pwHash: string,
     encSeed: string,
     nonce: string,
-): Promise<IAPIResponse> => {
-    const response = await apiClient.post("/user/create", {
+): Promise<IAPIResponse<any>> => {
+    const response = await apiClient.post("/auth/create", {
         username,
         display_name: displayName,
         email,
@@ -45,13 +50,13 @@ export const createUser = async (
     return response.data;
 };
 
-export const getAuthenticatedUser = async (): Promise<IAPIResponse> => {
+export const getAuthenticatedUser = async (): Promise<IAPIResponse<any>> => {
     // TODO: Implement on backend
     const response = await apiClient.get("/user/me");
     return response.data;
 };
 
-export const getAPIAccessToken = async (): Promise<IAPIResponse> => {
-    const response = await apiClient.post("/user/token");
+export const getAPIAccessToken = async (): Promise<IAPIResponse<any>> => {
+    const response = await apiClient.post("/auth/token");
     return response.data;
 };

@@ -8,8 +8,8 @@ export function useWSHeartbeat(
     socket: WebSocket | null,
     onDisconnect: () => void,
 ) {
-    const intervalRef = useRef<number | null>(null);
-    const timeoutRef = useRef<number | null>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const cleanup = () => {
         if (intervalRef.current) {
             clearInterval(intervalRef.current);

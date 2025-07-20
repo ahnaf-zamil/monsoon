@@ -26,10 +26,33 @@ definitions:
       email:
         example: john@doe.com
         type: string
-      password:
-        example: ilovejanedoe
-        minLength: 8
+      enc_seed:
         type: string
+      nonce:
+        type: string
+      pub_keys:
+        description: Base64 encoded X25519 and ED25519 public keys
+        properties:
+          enc:
+            type: string
+          sig:
+            type: string
+        required:
+        - enc
+        - sig
+        type: object
+      pw_hash:
+        type: string
+      salts:
+        properties:
+          enc_salt:
+            type: string
+          pw_salt:
+            type: string
+        required:
+        - enc_salt
+        - pw_salt
+        type: object
       username:
         example: johndoe1
         maxLength: 15
@@ -38,7 +61,10 @@ definitions:
     required:
     - display_name
     - email
-    - password
+    - enc_seed
+    - nonce
+    - pub_keys
+    - pw_hash
     - username
     type: object
   api.UserLoginSchema:

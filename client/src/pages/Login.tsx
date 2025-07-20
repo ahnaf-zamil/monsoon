@@ -1,13 +1,14 @@
 import type React from "react";
 import MonsoonLogo from "../static/img/monsoon_logo.png";
 import { useContext, useEffect, useState } from "react";
-import { isEmptyString } from "../util";
-import { loginUser } from "../api/auth";
-import { isAxiosError } from "axios";
+import { fetchUserSalt, loginUser } from "../api/auth";
 import { PiPasswordBold } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FiMail } from "react-icons/fi";
+import type { IAPIResponse } from "../api/types";
+import { decodeBase64, encodeBase64 } from "tweetnacl-util";
+import { CryptoHelper } from "../crypto/helper";
 
 export const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -26,24 +27,60 @@ export const Login: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!isEmptyString(email) && !isEmptyString(password)) {
-            // Login user here
-            const resp = await loginUser(email, password);
-            if (!isAxiosError(resp)) {
-                window.location.href = "/";
-            } else {
-                switch (resp.response?.status) {
-                    case 400:
-                        setError("Bad request");
-                        break;
-                    case 401:
-                        setError("Invalid username/password");
-                        break;
-                    case 500:
-                        setError("Internal server error");
-                        break;
-                }
+        const handleServerError = (resp: IAPIResponse<any>) => {
+            switch (resp.status) {
+                case 400:
+                    setError("Bad request");
+                    break;
+                case 401:
+                    setError("Invalid username/password");
+                    break;
+                case 500:
+                    setError("Internal server error");
+                    break;
             }
+        };
+
+        try {
+            // Fetch user password salt
+            let resp = await fetchUserSalt(email);
+            if (resp.error) {
+                return handleServerError(resp);
+            }
+            const salt = decodeBase64(resp.data);
+            // Derive password hash using salt and password
+            const pwHash = await CryptoHelper.deriveKey(password, salt);
+
+            // Send password hash over to server for matching and logging in
+            resp = await loginUser(email, encodeBase64(pwHash));
+            if (resp.error) {
+                return handleServerError(resp);
+            }
+
+            let decryptedSeed: Uint8Array;
+            try {
+                // Derive encryption key from salt and password to use for AES-GCM decryption
+                const encKey = await CryptoHelper.deriveKey(
+                    password,
+                    decodeBase64(resp.data.enc_salt),
+                );
+                decryptedSeed = await CryptoHelper.AESGCMDecrypt(
+                    encKey,
+                    decodeBase64(resp.data.nonce),
+                    decodeBase64(resp.data.enc_seed),
+                );
+            } catch (e) {
+                return setError("Error while decrypting key seed");
+            }
+            const keys = CryptoHelper.generateClientKeyPair(decryptedSeed);
+            console.log(keys);
+
+            // TODO: Persist keys in session storage and implement inter-tab communication using BroadcastChannel
+
+            window.location.href = "/";
+        } catch (e) {
+            console.error(e);
+            setError("An error occured while logging you in");
         }
     };
 
