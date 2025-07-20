@@ -28,8 +28,11 @@ import (
 //	@contact.name	Author
 //	@contact.url	https://ahnafzamil.com/contact
 //	@contact.email	ahnaf@ahnafzamil.com
+//  @license.name	AGPL-3.0
+// 	@license.url	https://www.gnu.org/licenses/agpl-3.0.en.html
 // 	@BasePath /api
 
+// @produce json
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
@@ -69,19 +72,26 @@ func main() {
 	if !(conf.IsDev) {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	r.GET("/ws", ws.WsHandler)
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "https://monsoon.ahnafzamil.com"},
-		AllowHeaders:     []string{"*"},
+		AllowOrigins:     conf.AllowedOrigins,
+		AllowHeaders:     []string{"content-type", "authorization"},
+		AllowMethods:     []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
 		AllowCredentials: true,
 		MaxAge:           24 * 7 * time.Hour,
 	}))
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
 	controller.InitControllers(r)
+
+	wsHandler := ws.GetWebSocketHandler()
+	r.GET("/ws", wsHandler.ConnectionHandler)
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Here we go
 	log.Println("Server started on port", conf.Port)
 
+	wsHandler.StartHeartbeat()
 	err = http.ListenAndServe("0.0.0.0:"+conf.Port, r)
 	if err != nil {
 		log.Println("Error starting server:", err)

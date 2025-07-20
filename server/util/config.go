@@ -15,6 +15,7 @@ type Config struct {
 	Port                 string
 	IsDev                bool
 	JWTSecret            string
+	AllowedOrigins       []string
 }
 
 var config *Config
@@ -26,6 +27,11 @@ func LoadConfig() *Config {
 		IsDev = false
 	}
 
+	allowedOrigins := []string{os.Getenv("CLIENT_ORIGIN")}
+	if IsDev {
+		allowedOrigins = append(allowedOrigins, "http://localhost:5173") // Frontend dev server port
+	}
+
 	config = &Config{
 		NATSUrl:              os.Getenv("NATS_URL"),
 		NATSUsername:         os.Getenv("NATS_USERNAME"),
@@ -34,8 +40,9 @@ func LoadConfig() *Config {
 		MessageDBPostgresURL: os.Getenv("MESSAGE_DB_POSTGRES_URL"),
 		SnowflakeNodeId:      os.Getenv("SNOWFLAKE_NODE_ID"),
 		Port:                 os.Getenv("PORT"),
-		IsDev:                IsDev,
 		JWTSecret:            os.Getenv("JWT_SECRET"),
+		IsDev:                IsDev,
+		AllowedOrigins:       allowedOrigins,
 	}
 	return config
 }

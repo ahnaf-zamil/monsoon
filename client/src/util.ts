@@ -1,3 +1,3 @@
 export const isEmptyString = (inp: string) => {
-  return !/\S/.test(inp);
+    return !/\S/.test(inp);
 };

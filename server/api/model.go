@@ -18,6 +18,22 @@ type UserModel struct {
 	DisplayName  string `json:"display_name"`
 	CreatedAt    string `json:"created_at"`
 	Email        string `json:"email"`
-	Password     string `json:"-"`
-	RefreshToken string `json:"-"`
+	PasswordHash []byte `json:"-"`
+}
+
+type UserSessionModel struct {
+	SessionID    string
+	UserID       string
+	RefreshToken string
+	CreatedAt    int64
+}
+
+type UserAuthModel struct {
+	UserID         string `json:"-"`
+	Email          string `json:"-"`
+	PasswordHash   []byte `json:"-"`
+	PasswordSalt   []byte `json:"-"`
+	EncryptionSalt []byte `json:"enc_salt"`
+	EncryptedSeed  []byte `json:"enc_seed"`
+	Nonce          []byte `json:"nonce"`
 }
