@@ -151,6 +151,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
       summary: Login user
       tags:
       - auth
@@ -197,13 +201,13 @@ paths:
       summary: Get Access Token
       tags:
       - auth
-  /message/user/{recipientId}:
+  /message/user/{userId}:
     post:
       consumes:
       - application/json
       description: Send a direct message to a user
       parameters:
-      - description: User ID
+      - description: Recipient ID
         in: path
         name: userId
         required: true
@@ -221,8 +225,16 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/api.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/api.APIResponse'
       security:

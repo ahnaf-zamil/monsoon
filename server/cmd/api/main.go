@@ -47,9 +47,8 @@ func main() {
 	// Initialize snowflake ID generator
 	lib.InitSnowflakeNode()
 
-	// Connect to database
-
-	if err := db.CreateConnectionPool(conf.AppDBPostgresURL); err != nil {
+	// Connect to app database
+	if err := db.CreateAppDBPool(conf.AppDBPostgresURL); err != nil {
 		panic(err)
 	}
 	defer db.CloseConnection()

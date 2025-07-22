@@ -15,10 +15,10 @@ export const Register: React.FC = () => {
     const navigate = useNavigate();
     const currentUser = useContext(AuthContext);
 
-    const [username, setUsername] = useState<string>("123");
-    const [displayName, setDisplayName] = useState<string>("123");
-    const [email, setEmail] = useState<string>("ok@ok.ok");
-    const [password, setPassword] = useState<string>("123");
+    const [username, setUsername] = useState<string>("");
+    const [displayName, setDisplayName] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -91,6 +91,7 @@ export const Register: React.FC = () => {
             <img src={MonsoonLogo} className="w-84 pointer-none mb-2" alt="" />
             <div className="flex justify-center items-center ">
                 <form
+                    id="register-form"
                     className="w-96 p-6 rounded-lg grid gap-2"
                     onSubmit={handleSubmit}
                 >
@@ -111,6 +112,7 @@ export const Register: React.FC = () => {
                                     className="outline-none rounded-md flex-grow pr-4 py-2 placeholder:text-neutral-600 dark:placeholder:text-neutral-500 dark:text-white"
                                     placeholder="Username"
                                     id="username"
+                                    name="username"
                                     required={true}
                                     value={username}
                                     onChange={(e) =>
@@ -120,7 +122,7 @@ export const Register: React.FC = () => {
                             </div>
                         </div>
                         <div className="grid gap-1">
-                            <label htmlFor="username" className="sr-only">
+                            <label htmlFor="display_name" className="sr-only">
                                 Display Name
                             </label>
                             <div className="flex w-full rounded-md dark:bg-neutral-800 items-center justify-center">
@@ -129,7 +131,8 @@ export const Register: React.FC = () => {
                                     type="text"
                                     className="outline-none rounded-md flex-grow pr-4 py-2 placeholder:text-neutral-600 dark:placeholder:text-neutral-500 dark:text-white"
                                     placeholder="Display Name"
-                                    id="displayname"
+                                    id="display_name"
+                                    name="display_name"
                                     required={true}
                                     value={displayName}
                                     onChange={(e) =>
@@ -149,6 +152,7 @@ export const Register: React.FC = () => {
                                     className="outline-none rounded-md flex-grow pr-4 py-2 placeholder:text-neutral-600 dark:placeholder:text-neutral-500 dark:text-white"
                                     placeholder="Email"
                                     id="email"
+                                    name="email"
                                     required={true}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -166,6 +170,7 @@ export const Register: React.FC = () => {
                                     className="outline-none rounded-md flex-grow pr-4 py-2 placeholder:text-neutral-600 dark:placeholder:text-neutral-500 dark:text-white"
                                     placeholder="Password"
                                     id="password"
+                                    name="password"
                                     required={true}
                                     value={password}
                                     onChange={(e) =>
@@ -176,6 +181,7 @@ export const Register: React.FC = () => {
                         </div>
                         <button
                             onClick={(e) => handleSubmit(e as any)}
+                            id="submit-btn"
                             className="hover:cursor-pointer hover:bg-primary-darker bg-primary p-2 rounded-md  flex justify-center text-black"
                         >
                             Create Account

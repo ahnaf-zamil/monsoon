@@ -46,7 +46,7 @@ func (n *NATSPublisher) InitMsgListener() {
 		}
 
 		// Now we will start dispatching it to all sockets
-		sock_list := GetSocketsForRoom(msg.RoomID)
+		sock_list := GetSocketsForRoom(msg.ConversationID)
 
 		// Looping over all sockets in the room and forwarding the message to them
 		for _, s := range sock_list {

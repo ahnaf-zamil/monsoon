@@ -13,8 +13,9 @@ import (
 )
 
 type MessageController struct {
-	NATS_PUB ws.INATSPublisher
-	UserDB   app.IUserDB
+	NATS_PUB       ws.INATSPublisher
+	UserDB         app.IUserDB
+	ConversationDB app.IConversationDB
 }
 
 // @Summary      Directly Message a User
@@ -22,52 +23,78 @@ type MessageController struct {
 // @Tags         messages
 // @Accept       json
 // @Produce      json
-// @Param        userId   path      int  true  "User ID"
+// @Param        userId   path      int  true  "Recipient ID"
 // @Param        request  body     	api.MessageCreateSchema  true  "Message data"
 // @Success      201      {object}  api.APIResponse
-// @Failure      401      {object}  api.APIResponse
-// @Router       /message/user/{recipientId} [post]
+// @Failure      401,403,400      {object}  api.APIResponse
+// @Router       /message/user/{userId} [post]
 // @Security    BearerAuth
 func (ctrl *MessageController) MessageUserRoute(c *gin.Context) {
 	// Validating input
 	req := &api.MessageCreateSchema{}
 	err := util.ValidateRequestInput(c, req)
-
 	rs := &api.APIResponse{}
-	if err != nil {
-		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
-		return
-	}
+
 	author, ok := util.GetCurrentUser(c)
 	if !ok {
 		util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
 		return
 	}
 
-	recipientID := c.Param("recipientID")
-
-	recipient, err := ctrl.UserDB.GetUserByID(c.Request.Context(), recipientID)
 	if err != nil {
-		util.WriteAPIError(c, "User not found", rs, http.StatusNotFound)
+		util.WriteAPIError(c, "Invalid input", rs, http.StatusBadRequest)
 		return
 	}
 
-	content := req.Content
-	payload := api.MessageModel{
-		ID:          lib.GenerateSnowflakeID().String(),
-		Content:     content,
-		CreatedAt:   time.Now().Unix(),
-		RoomID:      "", // Empty for DM messages
-		AuthorID:    author.ID,
-		RecipientID: recipient.ID,
-		IsDM:        true,
+	recipientID := c.Param("recipientID")
+	recipient, err := ctrl.UserDB.GetUserByID(c.Request.Context(), recipientID)
+	if recipient == nil {
+		util.WriteAPIError(c, "User not found", rs, http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		util.HandleServerError(c, rs, err)
+		return
 	}
 
-	rs.Data = &payload
+	dm, err := ctrl.ConversationDB.GetExistingDM(c.Request.Context(), author.ID, recipientID)
+	if err != nil {
+		util.HandleServerError(c, rs, err)
+		return
+	}
+
+	if author.ID == recipient.ID {
+		// Why is bro DMing himself? Does he not have friends?
+		util.WriteAPIError(c, "Bro why are you DMing yourself?", rs, http.StatusForbidden)
+		return
+	}
+
+	var conversationIDStr string
+	if dm == nil {
+		conversationID := lib.GenerateSnowflakeID()
+		err = ctrl.ConversationDB.CreateUserDM(c.Request.Context(), conversationID.Int64(), author.ID, recipient.ID)
+		if err != nil {
+			util.HandleServerError(c, rs, err)
+			return
+		}
+		conversationIDStr = conversationID.String()
+	} else {
+		conversationIDStr = dm.ConversationID
+	}
+
+	// TODO: Revamp msg model when we set up msg DB
+	payload := api.MessageModel{
+		ID:             lib.GenerateSnowflakeID().String(),
+		Content:        req.Content,
+		CreatedAt:      time.Now().Unix(),
+		AuthorID:       author.ID,
+		ConversationID: conversationIDStr,
+	}
+
+	// TODO: Persist msg in DB
+
 	// Dispatch new message to NATS
 	ctrl.NATS_PUB.SendMsgNATS(payload)
 
-	// TODO: Persist message in DB
-	// TODO: Return message payload
-	util.WriteAPIResponse(c, "", rs, http.StatusCreated)
+	util.WriteAPIResponse(c, payload, rs, http.StatusCreated)
 }

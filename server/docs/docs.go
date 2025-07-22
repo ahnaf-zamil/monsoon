@@ -108,6 +108,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/api.APIResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
                     }
                 }
             }
@@ -178,7 +184,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/message/user/{recipientId}": {
+        "/message/user/{userId}": {
             "post": {
                 "security": [
                     {
@@ -199,7 +205,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "Recipient ID",
                         "name": "userId",
                         "in": "path",
                         "required": true
@@ -221,8 +227,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/api.APIResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/api.APIResponse"
                         }

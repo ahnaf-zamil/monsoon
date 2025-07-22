@@ -101,6 +101,12 @@
                         "schema": {
                             "$ref": "#/definitions/api.APIResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
                     }
                 }
             }
@@ -171,7 +177,7 @@
                 }
             }
         },
-        "/message/user/{recipientId}": {
+        "/message/user/{userId}": {
             "post": {
                 "security": [
                     {
@@ -192,7 +198,7 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "Recipient ID",
                         "name": "userId",
                         "in": "path",
                         "required": true
@@ -214,8 +220,20 @@
                             "$ref": "#/definitions/api.APIResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/api.APIResponse"
                         }

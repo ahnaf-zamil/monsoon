@@ -4,6 +4,7 @@ import (
 	"monsoon/api"
 	"monsoon/db"
 	"monsoon/db/app"
+	"monsoon/db/tables"
 	"monsoon/lib"
 	"net/http"
 	"strings"
@@ -32,8 +33,8 @@ func RefreshTokenRequired(userDB app.IUserDB, jwt lib.IJWTTokenHelper) gin.Handl
 		}
 
 		// Fetch user from DB
-		session, _ := userDB.GetSessionByAnyField(c.Request.Context(), map[db.UserColumn]any{
-			db.ColSessionRefreshToken: token,
+		session, _ := userDB.GetSessionByAnyField(c.Request.Context(), map[db.DBColumn]any{
+			tables.ColSessionRefreshToken: token,
 		})
 		if session == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
@@ -85,8 +86,8 @@ func AuthRequired(userDB app.IUserDB, jwt lib.IJWTTokenHelper) gin.HandlerFunc {
 			return
 		}
 
-		fields := map[db.UserColumn]any{
-			db.ColUserID: userID,
+		fields := map[db.DBColumn]any{
+			tables.ColUserID: userID,
 		}
 		user, err := userDB.GetUserByAnyField(c.Request.Context(), fields)
 		if err != nil {

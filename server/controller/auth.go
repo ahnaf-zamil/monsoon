@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"log"
 	"monsoon/api"
 	"monsoon/db"
 	"monsoon/db/app"
+	"monsoon/db/tables"
 	"monsoon/lib"
 	"monsoon/util"
 	"net/http"
@@ -64,9 +66,9 @@ func (ctrl *AuthController) AuthRegistrationRoute(c *gin.Context) {
 	}
 
 	// Checks if another user already exists with EITHER the same username OR same email
-	fields := map[db.UserColumn]any{
-		db.ColUserEmail:    req.Email,
-		db.ColUserUsername: req.Username,
+	fields := map[db.DBColumn]any{
+		tables.ColUserEmail:    req.Email,
+		tables.ColUserUsername: req.Username,
 	}
 	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
@@ -133,8 +135,8 @@ func (ctrl *AuthController) AuthFetchUserSalt(c *gin.Context) {
 	}
 
 	// Check for user's existence
-	fields := map[db.UserColumn]any{
-		db.ColUserEmail: req.Email,
+	fields := map[db.DBColumn]any{
+		tables.ColUserEmail: req.Email,
 	}
 	user, _ := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	// No need for error checks, auth wont exist if user doesnt exist
@@ -163,7 +165,7 @@ func (ctrl *AuthController) AuthFetchUserSalt(c *gin.Context) {
 // @Produce      json
 // @Param        request  body     	api.UserLoginSchema  true  "User credentials"
 // @Success      200      {object}  api.APIResponse
-// @Failure      400      {object}  api.APIResponse
+// @Failure      400,401      {object}  api.APIResponse
 // @Router       /auth/login [post]
 func (ctrl *AuthController) AuthLoginUser(c *gin.Context) {
 	/* Authenticate user using password hash */
@@ -182,11 +184,16 @@ func (ctrl *AuthController) AuthLoginUser(c *gin.Context) {
 	}
 
 	// Check for user's existence
-	fields := map[db.UserColumn]any{
-		db.ColUserEmail: req.Email,
+	fields := map[db.DBColumn]any{
+		tables.ColUserEmail: req.Email,
 	}
 	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
+		log.Fatal(err)
+		util.HandleServerError(c, rs, err)
+		return
+	}
+	if user == nil {
 		util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
 		return
 	}
