@@ -1,0 +1,20 @@
+services:
+  postgres:
+    container_name: monsoon-postgres
+    image: postgres:17-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ./.docker/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=monsoon
+      - POSTGRES_USER=monsoon
+      - POSTGRES_DB=monsoon
+
+  nats:
+    image: nats:2-alpine
+    container_name: monsoon-nats
+    ports:
+      - 4222:4222
+      - 6222:6222
+      - 8222:8222
