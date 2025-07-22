@@ -14,7 +14,7 @@ var appSchemaDir = "./schema/app"
 func CreateAppDBSchemas(conf *util.Config) {
 	log.Println("Starting schema generation for App DB")
 
-	if err := CreateConnectionPool(conf.AppDBPostgresURL); err != nil {
+	if err := CreateAppDBPool(conf.AppDBPostgresURL); err != nil {
 		panic(err)
 	}
 	defer CloseConnection()

@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var pool *pgxpool.Pool
+var userDBPool *pgxpool.Pool
 
 // Stub during testing
 type IPgxPool interface {
@@ -23,26 +23,34 @@ type AppDB struct {
 	DBPool IPgxPool
 }
 
-func CreateConnectionPool(dbURL string) error {
+func CreateConnectionPool(dbURL string) (*pgxpool.Pool, error) {
 	conn, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
 		log.Printf("Unable to create connection pool: %v\n", err)
-		return err
+		return nil, err
 	}
 	err = conn.Ping(context.Background())
 	if err != nil {
 		log.Printf("DB Ping error: %v\n", err)
-		return err
+		return nil, err
 	}
 	log.Println("Connected to database")
-	pool = conn
+	return conn, nil
+}
+
+func CreateAppDBPool(dbURL string) error {
+	pool, err := CreateConnectionPool(dbURL)
+	if err != nil {
+		return err
+	}
+	userDBPool = pool
 	return nil
 }
 
 func CloseConnection() {
-	pool.Close()
+	userDBPool.Close()
 }
 
 func GetAppDB() *AppDB {
-	return &AppDB{DBPool: pool}
+	return &AppDB{DBPool: userDBPool}
 }
