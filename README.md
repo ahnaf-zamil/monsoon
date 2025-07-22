@@ -39,22 +39,31 @@ yarn build
 
 ### Server
 
-Start server
 
-```
-go run cmd/api/main.go
-```
+Make sure to change directory into [`server/`]("./server/") before running these commands.
 
 Generate DB schema (will extend for migration later)
 
 ```
-go run cmd/migrate/main.go
+./run_migrations.sh
 ```
 
 Regenerate Swagger docs
 
 ```
-swag init --dir cmd/api,controller --pd
+go install github.com/swaggo/swag/cmd/swag@latest
+./generate_docs.sh
+```
+
+Generate mocks
+```
+go install github.com/golang/mock/mockgen@v1.6.0
+./generate_mocks.sh
+```
+
+Start the API server
+```
+./start_server.sh
 ```
 
 API Docs at `http://localhost:9000/swagger/index.html`
@@ -62,7 +71,7 @@ API Docs at `http://localhost:9000/swagger/index.html`
 ## To Do
 
 - Set up separate DB for persisting messages
-- Separate "groups" and "dm" in WebSocket rooms state
+- Room sync on client side upon connection
 - Implement message bucketing and partitons
 - Store key seed on client side (Possibly in SessionStorage with BroadcastChannel for inter-tab communication?)
 

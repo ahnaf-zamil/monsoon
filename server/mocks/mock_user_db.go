@@ -37,17 +37,17 @@ func (m *MockIUserDB) EXPECT() *MockIUserDBMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockIUserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password []byte) error {
+func (m *MockIUserDB) CreateUser(ctx context.Context, id int64, username, displayName, email string, password, keyEnc, keySig, pwSalt, encSalt, encSeed, nonce []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", ctx, id, username, displayName, email, password)
+	ret := m.ctrl.Call(m, "CreateUser", ctx, id, username, displayName, email, password, keyEnc, keySig, pwSalt, encSalt, encSeed, nonce)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateUser indicates an expected call of CreateUser.
-func (mr *MockIUserDBMockRecorder) CreateUser(ctx, id, username, displayName, email, password interface{}) *gomock.Call {
+func (mr *MockIUserDBMockRecorder) CreateUser(ctx, id, username, displayName, email, password, keyEnc, keySig, pwSalt, encSalt, encSeed, nonce interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockIUserDB)(nil).CreateUser), ctx, id, username, displayName, email, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockIUserDB)(nil).CreateUser), ctx, id, username, displayName, email, password, keyEnc, keySig, pwSalt, encSalt, encSeed, nonce)
 }
 
 // CreateUserSession mocks base method.
@@ -65,7 +65,7 @@ func (mr *MockIUserDBMockRecorder) CreateUserSession(ctx, sessionID, userID, ref
 }
 
 // GetSessionByAnyField mocks base method.
-func (m *MockIUserDB) GetSessionByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserSessionModel, error) {
+func (m *MockIUserDB) GetSessionByAnyField(ctx context.Context, fields map[db.DBColumn]any) (*api.UserSessionModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSessionByAnyField", ctx, fields)
 	ret0, _ := ret[0].(*api.UserSessionModel)
@@ -79,8 +79,23 @@ func (mr *MockIUserDBMockRecorder) GetSessionByAnyField(ctx, fields interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSessionByAnyField", reflect.TypeOf((*MockIUserDB)(nil).GetSessionByAnyField), ctx, fields)
 }
 
+// GetUserAuthByID mocks base method.
+func (m *MockIUserDB) GetUserAuthByID(ctx context.Context, userID string) (*api.UserAuthModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserAuthByID", ctx, userID)
+	ret0, _ := ret[0].(*api.UserAuthModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserAuthByID indicates an expected call of GetUserAuthByID.
+func (mr *MockIUserDBMockRecorder) GetUserAuthByID(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserAuthByID", reflect.TypeOf((*MockIUserDB)(nil).GetUserAuthByID), ctx, userID)
+}
+
 // GetUserByAnyField mocks base method.
-func (m *MockIUserDB) GetUserByAnyField(ctx context.Context, fields map[db.UserColumn]any) (*api.UserModel, error) {
+func (m *MockIUserDB) GetUserByAnyField(ctx context.Context, fields map[db.DBColumn]any) (*api.UserModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByAnyField", ctx, fields)
 	ret0, _ := ret[0].(*api.UserModel)
@@ -110,7 +125,7 @@ func (mr *MockIUserDBMockRecorder) GetUserByID(c, userID interface{}) *gomock.Ca
 }
 
 // UpdateUserTableById mocks base method.
-func (m *MockIUserDB) UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.UserColumn]string) error {
+func (m *MockIUserDB) UpdateUserTableById(ctx context.Context, id int64, table string, values map[db.DBColumn]string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUserTableById", ctx, id, table, values)
 	ret0, _ := ret[0].(error)

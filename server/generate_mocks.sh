@@ -5,6 +5,7 @@ FILES=(
     "lib/pw_hash.go"
     "ws/nats.go"
     "db/app/user_db.go"
+    "db/app/conversation_db.go"
 )
 
 DEST_PACKAGE="mocks"

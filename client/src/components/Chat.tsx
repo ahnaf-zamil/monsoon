@@ -2,10 +2,18 @@ import type React from "react";
 import { BiArrowBack } from "react-icons/bi";
 import { MdVerified } from "react-icons/md";
 import { MessageBox } from "./MessageBox";
+import { sendDirectMessageToUser } from "../api/message";
 
 export const Chat: React.FC = () => {
-    const handleMessageSubmit = (content: string) => {
-        console.log(content);
+    const handleMessageSubmit = async (content: string) => {
+        const userID = "1947592876099653632" // Hardcoding it for now, will use state management later
+
+        const resp = await sendDirectMessageToUser(userID, content);
+        if (!resp.error) {
+            console.log(resp.data);
+        } else {
+            console.error(resp.message)
+        }
     };
 
     return (
@@ -17,7 +25,7 @@ export const Chat: React.FC = () => {
                     </button>
                     <h1 className="text-xl dark:text-white flex items-center gap-2">
                         <>
-                            <p>Note to self</p>
+                            <p>Home</p>
                             <span className="text-blue-600">
                                 <MdVerified />
                             </span>

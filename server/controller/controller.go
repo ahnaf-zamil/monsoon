@@ -13,8 +13,10 @@ func InitControllers(r *gin.Engine) {
 	/* Registering HTTP route controllers by creating subrouters */
 
 	tokenHelper := lib.GetJWTTokenHelper()
-	userDB := app.GetUserDB()
 	passHasher := lib.GetPasswordHasher()
+
+	userDB := app.GetUserDB()
+	convoDB := app.GetConversationDB()
 
 	rfTokenMiddleware := middleware.RefreshTokenRequired(userDB, tokenHelper)
 	authMiddleware := middleware.AuthRequired(userDB, tokenHelper)
@@ -25,7 +27,7 @@ func InitControllers(r *gin.Engine) {
 	user := api.Group("/user")
 	auth := api.Group("/auth")
 
-	msg_ctrl := &MessageController{UserDB: userDB, NATS_PUB: &ws.NATSPublisher{}}
+	msg_ctrl := &MessageController{UserDB: userDB, NATS_PUB: &ws.NATSPublisher{}, ConversationDB: convoDB}
 	msg.POST("/user/:recipientID", authMiddleware, msg_ctrl.MessageUserRoute)
 
 	auth_ctrl := &AuthController{UserDB: userDB, PasswordHasher: passHasher, TokenHelper: tokenHelper}

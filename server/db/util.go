@@ -1,9 +1,11 @@
 package db
 
-import "fmt"
+import (
+	"fmt"
+)
 
 /* DB-sided */
-func GenerateDBQueryFields(cols []UserColumn) string {
+func GenerateDBQueryFields(cols []DBColumn) string {
 	/* Generates SELECT query fields using provided columns */
 
 	selected_columns := ""
@@ -19,7 +21,7 @@ func GenerateDBQueryFields(cols []UserColumn) string {
 	return selected_columns
 }
 
-func GenerateDBUpdateFields(values map[UserColumn]string) string {
+func GenerateDBUpdateFields(values map[DBColumn]string) string {
 	/* Generates UPDATE fields using provided columns */
 	update_fields := ""
 	i := 1
@@ -34,7 +36,7 @@ func GenerateDBUpdateFields(values map[UserColumn]string) string {
 	return update_fields
 }
 
-func GenerateDBOrFields(fields []UserColumn) string {
+func GenerateDBOrFields(fields []DBColumn) string {
 	/* Generates the OR conditions for given columns */
 	or_fields := ""
 

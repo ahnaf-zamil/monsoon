@@ -12,10 +12,9 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
     const isEditing = false;
     const [content, setContent] = useState<string>("");
 
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         if (!isEmptyString(content)) {
-            // Non-empty and
             submitHandler(content);
             setContent("");
         }
@@ -23,10 +22,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
 
     return (
         <>
-            <form
-                onSubmit={(e) => {
-                    onSubmit(e);
-                }}
+            <div
                 className="absolute bottom-0 flex-grow h-20 px-5 flex items-center gap-2 w-full"
             >
                 {/* {imgBase64 && (
@@ -62,7 +58,9 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
                             className={`outline outline-2 outline-primary w-full rounded-full px-6 py-3 bg-neutral-200 placeholder:text-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:text-white`}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            required
+                            onKeyDown={(e) => {
+                                if (e.key == "Enter") onSubmit(e)
+                            }}
                         />
                     </div>
 
@@ -90,13 +88,13 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
                     )}
 
                     <button
-                        type="submit"
+                        onClick={(e) => onSubmit(e)}
                         className={`bg-neutral-200 rounded-full h-12 aspect-square flex items-center justify-center p-2.5 text-primary dark:bg-neutral-800`}
                     >
                         <BiCheck size={"100%"} />
                     </button>
                 </div>
-            </form>
+            </div>
         </>
     );
 };
