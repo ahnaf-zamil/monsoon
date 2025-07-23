@@ -14,7 +14,6 @@ export const SocketContext = createContext<WebSocket | null>(null);
 
 export const useWebSocket = () => useContext(SocketContext);
 
-
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
     const currentUser = useContext(AuthContext);
     const [socket, setSocket] = useState<WebSocket | null>(null);

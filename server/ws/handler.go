@@ -20,7 +20,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func GetWebSocketHandler() IWebSocketHandler {
-	return &WebSocketHandler{UserDB: app.GetUserDB(), TokenHelper: lib.GetJWTTokenHelper()}
+	return &WebSocketHandler{UserDB: app.GetUserDB(), ConversationDB: app.GetConversationDB(), TokenHelper: lib.GetJWTTokenHelper()}
 }
 
 func (w *WebSocketHandler) HandleSocketEvent(socket *Socket, msg map[string]any) {
@@ -42,31 +42,23 @@ func (w *WebSocketHandler) RegisterSocketClient(wsConn *websocket.Conn, userID s
 
 	err := w.DispatchEvent(s, OpHeartbeatInit, gin.H{"interval": HEARTBEAT_INTERVAL.Milliseconds(), "timeout": HEARTBEAT_TIMEOUT.Milliseconds()})
 	if err != nil {
-		RemoveSocketFromList(s)
 		return nil, err
 	}
 	mu.RUnlock()
 
-	// Adding socket to rooms
-	// TODO: Connect database and fetch room list to join
-
-	// Add user to own DM room to receive DMs
-	AddSocketToRoom(s, "dm:"+userID)
-
-	// Return list of rooms to the client
-	roomsList := []string{}
-	for k := range s.Rooms {
-		roomsList = append(roomsList, k)
+	// Adding socket to rooms and dispatch inbox to client
+	err = w.DispatchAndSyncSocketRooms(s)
+	if err != nil {
+		return nil, err
 	}
-	// Handle rooms list send error
-	// Client will keep all these rooms list in memory
-	err = w.DispatchEvent(s, OpRoomSync, gin.H{"rooms": roomsList})
+
 	return s, err
 }
 
 // Handles any socket disconnection event
 func HandleSocketDisconnect(client_s *Socket) {
 	// Removes socket from the sock list state
+	mu.RLock()
 	log.Printf("Disconnected client: %s (%s)\n", client_s.ID, client_s.WsConn.RemoteAddr())
 	RemoveSocketFromList(client_s)
 
@@ -74,6 +66,7 @@ func HandleSocketDisconnect(client_s *Socket) {
 	for k := range client_s.Rooms {
 		RemoveSocketFromRoom(client_s, k)
 	}
+	mu.RUnlock()
 }
 
 func (w *WebSocketHandler) ConnectionHandler(c *gin.Context) {

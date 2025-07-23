@@ -20,6 +20,8 @@ type ConversationDB struct {
 type IConversationDB interface {
 	CreateUserDM(ctx context.Context, conversationID int64, user1ID string, user2ID string) error
 	GetExistingDM(ctx context.Context, user1ID string, user2ID string) (*api.DirectConversationModel, error)
+	GetConvesationParticipantsByFields(ctx context.Context, fields map[db.DBColumn]any) ([]api.ConversationParticipant, error)
+	GetUserInboxConversations(ctx context.Context, userID string) ([]api.InboxConversation, error)
 }
 
 func GetConversationDB() *ConversationDB {
@@ -97,6 +99,96 @@ func (cv *ConversationDB) GetExistingDM(ctx context.Context, user1ID string, use
 		// Else, just return model
 		return &dm, nil
 	}
+}
+
+func (cv *ConversationDB) GetConvesationParticipantsByFields(ctx context.Context, fields map[db.DBColumn]any) ([]api.ConversationParticipant, error) {
+	field_arr := []db.DBColumn{}
+	value_arr := []any{}
+	for k, v := range fields {
+		field_arr = append(field_arr, k)
+		value_arr = append(value_arr, v)
+	}
+
+	// Generate the "OR" conditions using given fields
+	or_fields := db.GenerateDBOrFields(field_arr)
+
+	// Generate the SELECT columns
+	cols := []db.DBColumn{tables.ColConvoPartConversationID, tables.ColConvoPartUserID, tables.ColConvoPartJoinedAt, tables.ColConvoPartRole}
+	selected_columns := db.GenerateDBQueryFields(cols)
+
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s",
+		selected_columns,
+		tables.TableConversationParticipants,
+		or_fields)
+
+	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
+	rows, err := cv.AppDB.DBPool.Query(ctx, query, value_arr...)
+	if err != nil {
+		return nil, err
+	}
+
+	conversations, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.ConversationParticipant])
+	if err != nil {
+		return nil, err
+	}
+
+	return conversations, err
+}
+
+func (cv *ConversationDB) GetUserInboxConversations(ctx context.Context, userID string) ([]api.InboxConversation, error) {
+	query := `
+(
+select
+	c.id as conversation_id,
+	c.type as type,
+	c.group_name as name,
+	c.updated_at as updated_at,
+	null as user_id
+from
+	conversations c
+join conversation_participants cp 
+on
+	cp.conversation_id = c.id
+where
+	c."type" = 'GROUP'
+	and cp.user_id = $1)
+union 
+(
+select 
+	dc.conversation_id as conversation_id, 
+	c.type as type, 
+	u.display_name as name,
+	c.updated_at as updated_at,
+	u.id as user_id
+from
+	direct_conversations dc
+join conversations c on
+	dc.conversation_id = c.id
+join users u on
+(
+	case
+		when dc.user1 = $1 then dc.user2
+	else
+		dc.user1
+end
+) = u.id
+where
+	dc.user1 = $1
+	or dc.user2 = $1
+)
+order by updated_at desc;`
+	rows, err := cv.AppDB.DBPool.Query(ctx, query, userID)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	conversations, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.InboxConversation])
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return conversations, err
 }
 
 func insertConversation(tx pgx.Tx, ctx context.Context, conversationID int64, convo_type db.ConversationType, createdAt int64, updatedAt int64) error {

@@ -22,9 +22,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
 
     return (
         <>
-            <div
-                className="absolute bottom-0 flex-grow h-20 px-5 flex items-center gap-2 w-full"
-            >
+            <div className="absolute bottom-0 flex-grow h-20 px-5 flex items-center gap-2 w-full">
                 {/* {imgBase64 && (
           <div className="absolute top-0 -translate-y-full">
             <div className="relative w-24">
@@ -59,7 +57,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key == "Enter") onSubmit(e)
+                                if (e.key == "Enter") onSubmit(e);
                             }}
                         />
                     </div>

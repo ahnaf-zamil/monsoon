@@ -14,6 +14,7 @@ var userDBPool *pgxpool.Pool
 // Stub during testing
 type IPgxPool interface {
 	BeginTx(context.Context, pgx.TxOptions) (pgx.Tx, error)
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...any) pgx.Row
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 	Close()

@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS conversations (
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,   -- update on new message
     group_name TEXT,              -- for groups only
-    group_icon TEXT              -- group icon, optional
 );
 
 CREATE TABLE IF NOT EXISTS conversation_participants (
