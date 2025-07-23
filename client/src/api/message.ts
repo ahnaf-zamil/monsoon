@@ -13,10 +13,13 @@ export const sendDirectMessageToUser = async (
 
 export const sendMessageToConversation = async (
     conversationID: string,
-    content: string
+    content: string,
 ): Promise<IAPIResponse<any>> => {
-    const response = await apiClient.post(`/message/conversation/${conversationID}`, {
-        content,
-    });
+    const response = await apiClient.post(
+        `/message/conversation/${conversationID}`,
+        {
+            content,
+        },
+    );
     return response.data;
 };

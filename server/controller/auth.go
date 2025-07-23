@@ -90,25 +90,6 @@ func (ctrl *AuthController) AuthRegistrationRoute(c *gin.Context) {
 		return
 	}
 
-	// Creating user session (Essentially logging him in right after registration for better UX)
-	sessionID := lib.GenerateSnowflakeID()
-
-	// Create refreshToken with session ID
-	refreshToken, err := ctrl.TokenHelper.CreateNewToken(sessionID.String(), api.EXPIRY_REFRESH_TOKEN)
-	if err != nil {
-		util.HandleServerError(c, rs, err)
-		return
-	}
-
-	// Creating session entry
-	err = ctrl.UserDB.CreateUserSession(c.Request.Context(), sessionID.Int64(), userID.Int64(), refreshToken)
-	if err != nil {
-		util.HandleServerError(c, rs, err)
-		return
-	}
-
-	util.SetRefreshTokenCookie(c, refreshToken)
-
 	// TODO: Generate public key hashes and store in Merkle tree for later verification
 
 	util.WriteAPIResponse(c, user, rs, http.StatusCreated)

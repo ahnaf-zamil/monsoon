@@ -9,6 +9,7 @@ import { FiMail } from "react-icons/fi";
 import type { IAPIResponse } from "../api/types";
 import { decodeBase64, encodeBase64 } from "tweetnacl-util";
 import { CryptoHelper } from "../crypto/helper";
+import { storeSeedSecure } from "../crypto/store";
 
 export const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -72,10 +73,10 @@ export const Login: React.FC = () => {
             } catch (e) {
                 return setError("Error while decrypting key seed");
             }
-            const keys = CryptoHelper.generateClientKeyPair(decryptedSeed);
-            console.log(keys);
 
-            // TODO: Persist keys in session storage and implement inter-tab communication using BroadcastChannel
+            await storeSeedSecure(decryptedSeed);
+            // const keys = CryptoHelper.generateClientKeyPair(decryptedSeed);
+            // console.log(keys);
 
             window.location.href = "/";
         } catch (e) {
