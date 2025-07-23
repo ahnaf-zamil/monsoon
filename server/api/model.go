@@ -42,3 +42,18 @@ type DirectConversationModel struct {
 	User2ID        string
 	CreatedAt      int64
 }
+
+type ConversationParticipant struct {
+	ConversationID string `db:"conversation_id" json:"conversation_id"`
+	UserID         string `db:"user_id" json:"-"`
+	JoinedAt       int64  `db:"joined_at"`
+	Role           string `db:"role"`
+}
+
+type InboxConversation struct {
+	ConversationID string `db:"conversation_id" json:"conversation_id"`
+	Type           string `db:"type" json:"type"`
+	Name           string `db:"name" json:"name"`
+	UpdatedAt      int64  `db:"updated_at" json:"updated_at"`
+	UserID         any    `db:"user_id" json:"user_id,omitempty"`
+}

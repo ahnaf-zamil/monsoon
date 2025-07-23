@@ -59,7 +59,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key == "Enter") onSubmit(e)
+                                if (e.key == "Enter") onSubmit(e);
                             }}
                         />
                     </div>

@@ -12,7 +12,7 @@ export const Chat: React.FC = () => {
         if (!resp.error) {
             console.log(resp.data);
         } else {
-            console.error(resp.message)
+            console.error(resp.message);
         }
     };
 

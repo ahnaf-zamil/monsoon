@@ -3,8 +3,7 @@ CREATE TABLE IF NOT EXISTS conversations (
     type VARCHAR(10) CHECK (type IN ('DM', 'GROUP')),
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,   -- update on new message
-    group_name TEXT,              -- for groups only
-    group_icon TEXT              -- group icon, optional
+    group_name TEXT              -- for groups only
 );
 
 CREATE TABLE IF NOT EXISTS conversation_participants (
