@@ -101,6 +101,7 @@ func (cv *ConversationDB) GetExistingDM(ctx context.Context, user1ID string, use
 	}
 }
 
+
 func (cv *ConversationDB) GetConvesationParticipantsByFields(ctx context.Context, fields map[db.DBColumn]any) ([]api.ConversationParticipant, error) {
 	field_arr := []db.DBColumn{}
 	value_arr := []any{}
@@ -190,6 +191,7 @@ order by updated_at desc;`
 	}
 	return conversations, err
 }
+
 
 func insertConversation(tx pgx.Tx, ctx context.Context, conversationID int64, convo_type db.ConversationType, createdAt int64, updatedAt int64) error {
 	query := fmt.Sprintf("INSERT INTO %s (id, type, created_at, updated_at) VALUES ($1, $2, $3, $4)", tables.TableConversations)

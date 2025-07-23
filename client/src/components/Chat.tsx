@@ -6,7 +6,7 @@ import { sendDirectMessageToUser } from "../api/message";
 
 export const Chat: React.FC = () => {
     const handleMessageSubmit = async (content: string) => {
-        const userID = "1947592793379590144"; // Hardcoding it for now, will use state management later
+        const userID = "1947592876099653632" // Hardcoding it for now, will use state management later
 
         const resp = await sendDirectMessageToUser(userID, content);
         if (!resp.error) {
