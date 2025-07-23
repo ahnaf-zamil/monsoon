@@ -3,10 +3,14 @@ import { BiArrowBack } from "react-icons/bi";
 import { MdVerified } from "react-icons/md";
 import { MessageBox } from "./MessageBox";
 import { sendDirectMessageToUser } from "../api/message";
+import { useInboxStore } from "../store/inbox";
 
 export const Chat: React.FC = () => {
+    const inboxStore = useInboxStore();
+    const selectedConversation = inboxStore.getSelectedConversation();
+
     const handleMessageSubmit = async (content: string) => {
-        const userID = "1947592876099653632" // Hardcoding it for now, will use state management later
+        const userID = "1947592876099653632"; // Hardcoding it for now, will use state management later
 
         const resp = await sendDirectMessageToUser(userID, content);
         if (!resp.error) {
@@ -23,12 +27,13 @@ export const Chat: React.FC = () => {
                     <button className="hover:bg-neutral-200 h-11 aspect-square flex items-center justify-center rounded-full p-2.5 sm:hidden dark:text-white dark:hover:bg-neutral-800">
                         <BiArrowBack size={"100%"} />
                     </button>
-                    <h1 className="text-xl dark:text-white flex items-center gap-2">
+                    <h1 className="text-lg dark:text-white flex items-center gap-2">
                         <>
-                            <p>Home</p>
-                            <span className="text-blue-600">
-                                <MdVerified />
-                            </span>
+                            <p>
+                                {selectedConversation
+                                    ? selectedConversation.name
+                                    : "Home"}
+                            </p>
                         </>
                     </h1>
                 </div>

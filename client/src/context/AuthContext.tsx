@@ -1,9 +1,17 @@
-import { createContext, useEffect, useState, type ReactNode } from "react";
+import {
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+    type ReactNode,
+} from "react";
 import type { IUser } from "../types";
 import { getAPIAccessToken, getAuthenticatedUser } from "../api/auth";
 import { getAccessToken, setAPIAccessToken } from "../api/api";
 
 export const AuthContext = createContext<IUser | null>(null);
+
+export const useCurrentUser = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [currentUser, setCurrentUser] = useState<IUser | null>(null);

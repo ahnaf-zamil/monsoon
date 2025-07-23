@@ -6,8 +6,10 @@ import { AuthContext } from "../context/AuthContext";
 import { useWebSocket } from "../context/SocketContext";
 import type { IInboxEntry, IWebSocketDispatch } from "../ws/types";
 import { OPCODES } from "../ws/opcodes";
+import { useInboxStore } from "../store/inbox";
 
 export const Home: React.FC = () => {
+    const inboxState = useInboxStore();
     const user = useContext(AuthContext);
     const socket = useWebSocket();
 
@@ -16,11 +18,11 @@ export const Home: React.FC = () => {
             // TODO: add state management and separate socket event handlers
             const handleMessage = (e: MessageEvent) => {
                 const payload: IWebSocketDispatch<IInboxEntry[]> = JSON.parse(
-                    e.data
+                    e.data,
                 );
 
                 if (payload.opcode == OPCODES.RoomSync) {
-                    console.log(payload.data)
+                    inboxState.syncConversations(payload.data);
                 }
             };
 
