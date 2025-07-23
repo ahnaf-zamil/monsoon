@@ -1,9 +1,9 @@
 -- wip
 
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
     id BIGINT PRIMARY KEY,
     conversation_id BIGINT NOT NULL,
-    sender_id BIGINT NOT NULL,
+    author_id BIGINT NOT NULL,
     content TEXT,
     created_at BIGINT NOT NULL,
     edited_at BIGINT,

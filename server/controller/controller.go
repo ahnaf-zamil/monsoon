@@ -2,6 +2,7 @@ package controller
 
 import (
 	"monsoon/db/app"
+	msg "monsoon/db/message"
 	"monsoon/lib"
 	"monsoon/middleware"
 	"monsoon/ws"
@@ -16,6 +17,7 @@ func InitControllers(r *gin.Engine) {
 	passHasher := lib.GetPasswordHasher()
 
 	userDB := app.GetUserDB()
+	msgDB := msg.GetMessageDB()
 	convoDB := app.GetConversationDB()
 
 	rfTokenMiddleware := middleware.RefreshTokenRequired(userDB, tokenHelper)
@@ -27,8 +29,9 @@ func InitControllers(r *gin.Engine) {
 	user := api.Group("/user")
 	auth := api.Group("/auth")
 
-	msg_ctrl := &MessageController{UserDB: userDB, NATS_PUB: &ws.NATSPublisher{}, ConversationDB: convoDB}
+	msg_ctrl := &MessageController{UserDB: userDB, NATS_PUB: &ws.NATSPublisher{}, ConversationDB: convoDB, MsgDB: msgDB}
 	msg.POST("/user/:recipientID", authMiddleware, msg_ctrl.MessageUserRoute)
+	msg.POST("/conversation/:conversationID", authMiddleware, msg_ctrl.MessageConversationRoute)
 
 	auth_ctrl := &AuthController{UserDB: userDB, PasswordHasher: passHasher, TokenHelper: tokenHelper}
 	auth.POST("/create", auth_ctrl.AuthRegistrationRoute)

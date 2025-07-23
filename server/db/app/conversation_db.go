@@ -22,9 +22,10 @@ type IConversationDB interface {
 	GetExistingDM(ctx context.Context, user1ID string, user2ID string) (*api.DirectConversationModel, error)
 	GetConvesationParticipantsByFields(ctx context.Context, fields map[db.DBColumn]any) ([]api.ConversationParticipant, error)
 	GetUserInboxConversations(ctx context.Context, userID string) ([]api.InboxConversation, error)
+	GetUserConversationByID(ctx context.Context, conversationID string, userID string) (*api.InboxConversation, error)
 }
 
-func GetConversationDB() *ConversationDB {
+func GetConversationDB() IConversationDB {
 	convo_db := &ConversationDB{AppDB: db.GetAppDB()}
 	return convo_db
 }
@@ -77,6 +78,30 @@ func (cv *ConversationDB) CreateUserDM(ctx context.Context, conversationID int64
 	return nil
 }
 
+func (cv *ConversationDB) GetUserConversationByID(ctx context.Context, conversationID string, userID string) (*api.InboxConversation, error) {
+	// Returns conversation only if user is a participant
+	query := `
+SELECT c.id AS conversation_id,
+       c.type AS TYPE,
+       c.group_name AS name,
+       c.updated_at AS updated_at,
+       NULL AS user_id
+FROM conversations c
+JOIN conversation_participants cp ON c.id = cp.conversation_id
+WHERE cp.user_id = $2::BIGINT
+  AND c.id = $1::BIGINT
+	`
+	rows, err := cv.AppDB.DBPool.Query(ctx, query, conversationID, userID)
+	if err != nil {
+		return nil, err
+	}
+	convo, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[api.InboxConversation])
+	if err != nil {
+		return nil, err
+	}
+	return &convo, nil
+}
+
 func (cv *ConversationDB) GetExistingDM(ctx context.Context, user1ID string, user2ID string) (*api.DirectConversationModel, error) {
 	cols := []db.DBColumn{tables.ColDMID, tables.ColDMUser1, tables.ColDMUser2, tables.ColDMCreatedAt}
 	selected_columns := db.GenerateDBQueryFields(cols)
@@ -100,7 +125,6 @@ func (cv *ConversationDB) GetExistingDM(ctx context.Context, user1ID string, use
 		return &dm, nil
 	}
 }
-
 
 func (cv *ConversationDB) GetConvesationParticipantsByFields(ctx context.Context, fields map[db.DBColumn]any) ([]api.ConversationParticipant, error) {
 	field_arr := []db.DBColumn{}
@@ -183,7 +207,6 @@ order by updated_at desc;`
 		log.Println(err)
 		return nil, err
 	}
-
 	conversations, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.InboxConversation])
 	if err != nil {
 		log.Println(err)
@@ -191,7 +214,6 @@ order by updated_at desc;`
 	}
 	return conversations, err
 }
-
 
 func insertConversation(tx pgx.Tx, ctx context.Context, conversationID int64, convo_type db.ConversationType, createdAt int64, updatedAt int64) error {
 	query := fmt.Sprintf("INSERT INTO %s (id, type, created_at, updated_at) VALUES ($1, $2, $3, $4)", tables.TableConversations)

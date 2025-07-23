@@ -10,6 +10,7 @@ import (
 )
 
 var userDBPool *pgxpool.Pool
+var msgDBPool *pgxpool.Pool
 
 // Stub during testing
 type IPgxPool interface {
@@ -24,6 +25,10 @@ type AppDB struct {
 	DBPool IPgxPool
 }
 
+type MsgDB struct {
+	DBPool IPgxPool
+}
+
 func CreateConnectionPool(dbURL string) (*pgxpool.Pool, error) {
 	conn, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
@@ -35,7 +40,6 @@ func CreateConnectionPool(dbURL string) (*pgxpool.Pool, error) {
 		log.Printf("DB Ping error: %v\n", err)
 		return nil, err
 	}
-	log.Println("Connected to database")
 	return conn, nil
 }
 
@@ -45,13 +49,34 @@ func CreateAppDBPool(dbURL string) error {
 		return err
 	}
 	userDBPool = pool
+	log.Println("Created App database connection pool")
+	return nil
+}
+
+func CreateMsgDBPool(dbURL string) error {
+	pool, err := CreateConnectionPool(dbURL)
+	if err != nil {
+		return err
+	}
+	msgDBPool = pool
+	log.Println("Created Message database connection pool")
 	return nil
 }
 
 func CloseConnection() {
-	userDBPool.Close()
+	if userDBPool != nil {
+		userDBPool.Close()
+	}
+
+	if msgDBPool != nil {
+		msgDBPool.Close()
+	}
 }
 
 func GetAppDB() *AppDB {
 	return &AppDB{DBPool: userDBPool}
+}
+
+func GetMsgDB() *MsgDB {
+	return &MsgDB{DBPool: msgDBPool}
 }

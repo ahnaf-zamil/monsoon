@@ -9,7 +9,7 @@ func (w *WebSocketHandler) DispatchAndSyncSocketRooms(s *Socket) error {
 	ctx := context.TODO()
 	conversations, err := w.ConversationDB.GetUserInboxConversations(ctx, s.UserID)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		return err
 	}
 
@@ -19,7 +19,7 @@ func (w *WebSocketHandler) DispatchAndSyncSocketRooms(s *Socket) error {
 
 	err = w.DispatchEvent(s, OpRoomSync, conversations)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		return err
 	}
 

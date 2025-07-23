@@ -18,4 +18,5 @@ func main() {
 
 	conf := util.LoadConfig()
 	db.CreateAppDBSchemas(conf)
+	db.CreateMsgDBSchemas(conf)
 }

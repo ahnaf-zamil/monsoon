@@ -189,7 +189,7 @@ func (ctrl *AuthController) AuthLoginUser(c *gin.Context) {
 	}
 	user, err := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		util.HandleServerError(c, rs, err)
 		return
 	}

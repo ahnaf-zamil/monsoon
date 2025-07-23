@@ -9,26 +9,18 @@ import (
 	"monsoon/util"
 )
 
-var appSchemaDir = "./schema/app"
+const appSchemaDir = "./schema/app"
+const msgSchemaDir = "./schema/message"
 
-func CreateAppDBSchemas(conf *util.Config) {
-	log.Println("Starting schema generation for App DB")
-
-	if err := CreateAppDBPool(conf.AppDBPostgresURL); err != nil {
-		panic(err)
-	}
-	defer CloseConnection()
-
-	pool := GetAppDB().DBPool
-
-	files, err := os.ReadDir(appSchemaDir) // Path of the app DB sql files
+func createDBSchemas(pool IPgxPool, schemaDir string) {
+	files, err := os.ReadDir(schemaDir) // Path of the app DB sql files
 	if err != nil {
 		log.Println("unable to read directory: ", err)
 		return
 	}
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".sql" {
-			filePath := filepath.Join(appSchemaDir, file.Name())
+			filePath := filepath.Join(schemaDir, file.Name())
 
 			sqlContent, err := os.ReadFile(filePath)
 			if err != nil {
@@ -43,4 +35,24 @@ func CreateAppDBSchemas(conf *util.Config) {
 			log.Println("Generated schema for:", file.Name())
 		}
 	}
+}
+
+func CreateAppDBSchemas(conf *util.Config) {
+	log.Println("Starting schema generation for App DB")
+	if err := CreateAppDBPool(conf.AppDBPostgresURL); err != nil {
+		panic(err)
+	}
+	defer CloseConnection()
+	pool := GetAppDB().DBPool
+	createDBSchemas(pool, appSchemaDir)
+}
+
+func CreateMsgDBSchemas(conf *util.Config) {
+	log.Println("Starting schema generation for Message DB")
+	if err := CreateMsgDBPool(conf.MessageDBPostgresURL); err != nil {
+		panic(err)
+	}
+	defer CloseConnection()
+	pool := GetMsgDB().DBPool
+	createDBSchemas(pool, msgSchemaDir)
 }

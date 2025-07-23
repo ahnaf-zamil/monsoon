@@ -29,7 +29,7 @@ type IUserDB interface {
 	GetUserByID(c context.Context, userID string) (*api.UserModel, error)
 }
 
-func GetUserDB() *UserDB {
+func GetUserDB() IUserDB {
 	user_db := &UserDB{AppDB: db.GetAppDB()}
 	return user_db
 }

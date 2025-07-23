@@ -1,8 +1,7 @@
 import type React from "react";
 import { BiArrowBack } from "react-icons/bi";
-import { MdVerified } from "react-icons/md";
 import { MessageBox } from "./MessageBox";
-import { sendDirectMessageToUser } from "../api/message";
+import { sendMessageToConversation } from "../api/message";
 import { useInboxStore } from "../store/inbox";
 
 export const Chat: React.FC = () => {
@@ -10,9 +9,12 @@ export const Chat: React.FC = () => {
     const selectedConversation = inboxStore.getSelectedConversation();
 
     const handleMessageSubmit = async (content: string) => {
-        const userID = "1947592876099653632"; // Hardcoding it for now, will use state management later
+        if (!selectedConversation) return;
 
-        const resp = await sendDirectMessageToUser(userID, content);
+        const resp = await sendMessageToConversation(
+            selectedConversation.conversation_id,
+            content
+        );
         if (!resp.error) {
             console.log(resp.data);
         } else {

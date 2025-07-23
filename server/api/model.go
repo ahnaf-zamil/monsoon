@@ -5,9 +5,11 @@ package api
 type MessageModel struct {
 	ID             string `json:"id"`
 	Content        string `json:"content"`
+	EditedAt       any    `json:"edited_at"`
 	CreatedAt      int64  `json:"created_at"`
 	AuthorID       string `json:"author_id"`
 	ConversationID string `json:"conversation_id,omitempty"` // Optional
+	Deleted        bool   `json:"-"`
 }
 
 type UserModel struct {
@@ -53,7 +55,7 @@ type ConversationParticipant struct {
 type InboxConversation struct {
 	ConversationID string `db:"conversation_id" json:"conversation_id"`
 	Type           string `db:"type" json:"type"`
-	Name           string `db:"name" json:"name"`
+	Name           any    `db:"name" json:"name"`
 	UpdatedAt      int64  `db:"updated_at" json:"updated_at"`
 	UserID         any    `db:"user_id" json:"user_id,omitempty"`
 }
