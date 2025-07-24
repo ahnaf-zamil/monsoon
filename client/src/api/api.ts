@@ -7,7 +7,7 @@ export const apiClient = axios.create({
     withCredentials: true,
     timeout: 5000,
     headers: { "Content-Type": "application/json" },
-    validateStatus: (_) => true, // Axios shouldn't handle status codes
+    validateStatus: () => true, // Axios shouldn't handle status codes
 });
 
 export const setAPIAccessToken = (token: string) => {

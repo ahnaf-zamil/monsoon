@@ -5,19 +5,19 @@ import {
     useState,
     type ReactNode,
 } from "react";
-import { AuthContext } from "./AuthContext";
+import { useCurrentUser } from "./AuthContext";
 import { getAccessToken } from "../api/api";
 import { useWSHeartbeat } from "../hooks/Heartbeat";
 import { log } from "../utils";
 import { useInboxSocketHandler } from "../hooks/InboxSocket";
 import { useMessageSocketHandler } from "../hooks/MessageSocket";
 
-export const SocketContext = createContext<WebSocket | null>(null);
+const SocketContext = createContext<WebSocket | null>(null);
 
 export const useWebSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
-    const currentUser = useContext(AuthContext);
+    const currentUser = useCurrentUser();
     const [socket, setSocket] = useState<WebSocket | null>(null);
 
     const onDisconnect = () => {
@@ -31,19 +31,19 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     useMessageSocketHandler(socket);
 
     useEffect(() => {
-        if (currentUser && !socket) {
+        if (currentUser.isSuccess && !socket) {
             const accessToken = getAccessToken();
             const socket = new WebSocket(
                 import.meta.env.VITE_BASE_URL + `/ws?token=${accessToken}`,
             );
             setSocket(socket);
         }
-    }, [currentUser]);
+    }, [socket, currentUser.isSuccess]);
 
     useEffect(() => {
         if (!socket) return;
 
-        socket.addEventListener("close", (_) => {
+        socket.addEventListener("close", () => {
             log("error", "disconnected from WebSocket endpoint");
             setSocket(null);
         });

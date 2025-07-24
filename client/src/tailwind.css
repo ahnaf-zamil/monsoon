@@ -19,3 +19,8 @@
     --color-error: #ff6b6b;
     --color-border: #1d1d22;
 }
+
+body {
+    background-color: black;
+    color: white;
+}

@@ -23,6 +23,7 @@ export const useMessageSocketHandler = (socket: WebSocket | null) => {
             };
 
             socket.addEventListener("message", handleMessage);
+            return () => socket.removeEventListener("message", handleMessage);
         }
-    }, [socket]);
+    }, [socket, messageStore]);
 };

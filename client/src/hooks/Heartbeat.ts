@@ -70,5 +70,6 @@ export const useWSHeartbeat = (
             socket.removeEventListener("message", handleMessage);
             cleanup();
         };
-    }, [socket, onDisconnect]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [socket]);
 };

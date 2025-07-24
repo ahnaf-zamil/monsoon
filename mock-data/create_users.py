@@ -71,7 +71,7 @@ with sync_playwright() as p:
 
     for i, form_data in enumerate(form_data_list, start=1):
         print(f"Creating user {i}/{len(form_data_list)}")
-        
+
         page = browser.new_page()
         page.goto("http://localhost:5173/register", wait_until="domcontentloaded")
 

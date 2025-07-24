@@ -14,7 +14,7 @@ export const Sidebar: React.FC = () => {
                 <div className="absolute top-0 left-0 right-0 bottom-0 p-2 flex flex-col justify-between">
                     <div className="grid gap-2 overflow-y-auto">
                         {inboxState.isSynced ? (
-                            inboxState.conversations.map((convo, _) => (
+                            inboxState.conversations.map((convo) => (
                                 <InboxEntry
                                     conversationID={convo.conversation_id}
                                     name={convo.name}
@@ -46,10 +46,10 @@ export const Sidebar: React.FC = () => {
                             <div className="grid items-center">
                                 <>
                                     <p className="text-base leading-4 dark:text-white">
-                                        {currentUser?.display_name}
+                                        {currentUser?.data?.display_name}
                                     </p>
                                     <p className="text-neutral-600 text-sm leading-4 dark:text-neutral-500">
-                                        @{currentUser?.username}
+                                        @{currentUser?.data?.username}
                                     </p>
                                 </>
                             </div>

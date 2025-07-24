@@ -5,15 +5,17 @@ import { decryptSeedAndDeriveKeys } from "../crypto/store";
 import { CryptoHelper } from "../crypto/helper";
 import { useCryptoStore } from "../store/crypto";
 import { decodeBase64 } from "tweetnacl-util";
+import { log } from "../utils";
+import { LoadingPage } from "../pages/Loading";
 
 export const AuthRequired = () => {
     const cryptoStore = useCryptoStore();
     const currentUser = useCurrentUser();
 
     useEffect(() => {
-        if (currentUser != null) {
+        if (currentUser.isSuccess && !cryptoStore.hasKeys()) {
             (async () => {
-                console.log("Decrypting keys");
+                log("info", "decrypting keys");
                 const seed = await decryptSeedAndDeriveKeys();
                 if (seed != null) {
                     const keyPair = CryptoHelper.generateClientKeyPair(seed);
@@ -24,10 +26,13 @@ export const AuthRequired = () => {
                 }
             })();
         }
-    }, [currentUser]);
+    }, [currentUser.isSuccess, cryptoStore]);
 
-    if (!currentUser) return <Navigate to="/login" />;
-    else {
+    if (currentUser.isPending) {
+        return <LoadingPage />;
+    } else if (currentUser.isError) {
+        return <Navigate to="/login" />;
+    } else {
         if (!cryptoStore.hasKeys()) {
             return <></>;
         } else {

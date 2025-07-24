@@ -1,3 +1,7 @@
+import packageJson from "../package.json";
+
+export const appVersion = packageJson.version;
+
 type LogLevel = "info" | "warn" | "error" | "debug" | "log";
 
 export function log(level: LogLevel, ...args: any[]) {

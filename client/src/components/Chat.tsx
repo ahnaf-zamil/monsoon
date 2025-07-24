@@ -55,6 +55,7 @@ export const Chat: React.FC = () => {
                 }
             })();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedConversation]);
 
     return (
@@ -82,9 +83,9 @@ export const Chat: React.FC = () => {
                                 .getConversationMessages(
                                     selectedConversation.conversation_id,
                                 )
-                                ?.map((msg, _) => {
+                                ?.map((msg) => {
                                     const isMyMsg =
-                                        msg.author_id == currentUser?.id;
+                                        msg.author_id == currentUser?.data?.id;
                                     return (
                                         <div
                                             key={msg.id}

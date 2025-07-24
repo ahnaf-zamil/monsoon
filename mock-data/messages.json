@@ -1,0 +1,481 @@
+[
+    {
+        "content": "Hey, are you available to talk about the new project?",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Yeah, I’m free now. What’s on your mind?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "I was thinking we could restructure the onboarding flow. It's too long.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Agreed. Maybe split it into two separate screens?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Exactly! That way it doesn’t overwhelm new users right away.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Cool. I’ll draft a mockup tonight and send it over.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Perfect. Looking forward to it.",
+        "author_id": "{user1_id}"
+
+    },
+    {"content": "Talk soon!", "author_id": "{user2_id}" 
+
+},
+    {
+        "content": "Hey, here's the mockup I promised. Let me know what you think.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Wow, this looks great. Very clean layout.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Thanks! I tried to keep it minimal. Think it'll reduce drop-offs?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Definitely. Users will get to the main app flow quicker.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Should we A/B test this with the current version?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Good idea. Let’s track sign-up completion and time-to-first-action.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Alright, I’ll set up the experiment this afternoon.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Awesome. Just ping me if you hit any snags.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Will do. Thanks for the feedback!",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "No problem. Excited to see the results.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Me too. Catch up tomorrow?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Yeah, let’s regroup then. Good night!",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Morning! Did you get a chance to review the A/B test results?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Yes! The new onboarding flow improved completion by 12%.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "That's fantastic. Any drop in retention after day one?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Nope. In fact, it went up slightly. Early engagement looks better too.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Amazing. We should prepare a summary for the product team.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "I’ll write it up and share a draft by lunch.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Perfect. I’ll add the charts and screenshots once it’s ready.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "By the way, I noticed a few users skipping the tooltip tour.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Yeah, maybe it triggers too early. We could delay it?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Good call. I'll add that as an experiment for next sprint.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Oh, also—someone from support mentioned a bug on mobile checkout.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Ugh. I’ll pull logs and check if it's device-specific.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Thanks. Let me know if you need QA to reproduce.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Will do. I’ll loop them in once I verify.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Appreciate it. Want to include that in this week’s changelog?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Yes. Bug fixes + onboarding experiment should cover it.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Sounds good. Any updates on the localization rollout?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Spanish and German are live. French is pending review.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Great. I’ll notify comms so they can prepare release notes.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Perfect timing. Launch is still on track for Friday?",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Yep, barring any last-minute bugs.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "I’ll run final regression tests tomorrow.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Let me know if you need help verifying edge cases.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Will do. I’ll also double-check analytics tagging.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Awesome. Data team will appreciate that.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "By the way, love the new design tweaks to the settings screen.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Thanks! I’m still debating the font size for mobile.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Maybe make it dynamic based on screen width?",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Smart. I’ll prototype that tomorrow.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Cool. I’ll prep the accessibility checklist tonight.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Have you looked into the feedback from last week’s survey?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Yes, mostly positive but a few mentioned UI confusion on the dashboard.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "That’s good to know. Any plans to address it soon?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Planning a redesign sprint next month to tackle that.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Sounds perfect. Need me to help with user testing?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Absolutely, your help would be great!",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Let’s schedule some sessions then.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Will do. Also, the new API docs are live now.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Great! I’ll review and suggest edits if needed.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Thanks, that’d be helpful.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "By the way, the analytics dashboard needs better filtering options.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "I agree. I’ve added it to our backlog.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Awesome. What about the email notifications redesign?",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "It’s in progress; design team is finalizing mockups.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Looking forward to seeing those.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Same here. Should be ready by next week.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Cool, I’ll plan the rollout then.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "One more thing — server load spikes at peak hours.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Yeah, noticed that too. Ops is investigating.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Let’s monitor and maybe add some caching layers.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Good plan. I’ll coordinate with ops.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Thanks! Also, are we still on for the sprint demo Friday?",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Yes, everything’s prepped.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Great, I’ll finalize the slides.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Perfect. Let me know if you need anything.",
+        "author_id": "{user2_id}"
+
+    },
+    {"content": "Will do.", "author_id": "{user1_id}" 
+
+},
+    {
+        "content": "The onboarding tutorial has fewer completions on Android.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "I noticed that. Might be device compatibility issues.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "We should prioritize debugging that.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Agreed. I’ll assign it to the mobile team.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Thanks! I’ll prepare a bug report.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Awesome. The customer support team says there’s a new spike in tickets.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Yeah, mostly related to payment issues.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "We should investigate if it’s linked to recent changes.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Good call. I’ll check with finance.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Thanks. Also, is the user feedback form ready?",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Almost. Waiting on final design approval.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Let me know once it’s live, I want to test it.",
+        "author_id": "{user1_id}"
+
+    },
+    {"content": "Will do!", "author_id": "{user2_id}" 
+
+},
+    {
+        "content": "The marketing team wants some user stats by next week.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "I’ll prepare a report with key metrics.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Perfect. Thanks for handling that.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "No problem!",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Alright, I think that covers everything for now.",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "Yep, let’s catch up again tomorrow.",
+        "author_id": "{user2_id}"
+
+    },
+    {
+        "content": "Sounds good, have a great evening!",
+        "author_id": "{user1_id}"
+
+    },
+    {
+        "content": "You too, bye!",
+        "author_id": "{user2_id}"
+
+    }
+]
