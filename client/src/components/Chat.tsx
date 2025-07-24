@@ -1,11 +1,19 @@
 import type React from "react";
 import { BiArrowBack } from "react-icons/bi";
 import { MessageBox } from "./MessageBox";
-import { sendMessageToConversation } from "../api/message";
+import {
+    fetchConversationMessages,
+    sendMessageToConversation,
+} from "../api/message";
 import { useInboxStore } from "../store/inbox";
+import { useEffect } from "react";
+import { useMessageStore } from "../store/message";
+import { useCurrentUser } from "../context/AuthContext";
 
 export const Chat: React.FC = () => {
     const inboxStore = useInboxStore();
+    const messageStore = useMessageStore();
+    const currentUser = useCurrentUser();
     const selectedConversation = inboxStore.getSelectedConversation();
 
     const handleMessageSubmit = async (content: string) => {
@@ -13,7 +21,7 @@ export const Chat: React.FC = () => {
 
         const resp = await sendMessageToConversation(
             selectedConversation.conversation_id,
-            content,
+            content
         );
         if (!resp.error) {
             console.log(resp.data);
@@ -21,6 +29,31 @@ export const Chat: React.FC = () => {
             console.error(resp.message);
         }
     };
+
+    useEffect(() => {
+        if (selectedConversation != null) {
+            (async () => {
+                const convoID = selectedConversation.conversation_id;
+
+                const msg = messageStore.getConversationMessages(convoID);
+                if (msg == undefined) {
+                    console.log("No msg in cache, fetching");
+                    const resp = await fetchConversationMessages(
+                        selectedConversation.conversation_id,
+                        20
+                    );
+
+                    if (!resp.error) {
+                        messageStore.storeMessages(convoID, resp.data);
+                    } else {
+                        console.error(resp.error);
+                    }
+                } else {
+                    console.log("Has msg in cache");
+                }
+            })();
+        }
+    }, [selectedConversation]);
 
     return (
         <>
@@ -39,9 +72,44 @@ export const Chat: React.FC = () => {
                         </>
                     </h1>
                 </div>
-                <div className="fixed top-14 bottom-20 min-h-0 w-full flex flex-col justify-end">
-                    <div className="grid gap-2 p-2 pb-8 overflow-y-auto relative"></div>
-                </div>
+                {selectedConversation && (
+                    <div className="bg-chatbox fixed top-14 bottom-20 min-h-0 sm:w-[calc(100svw-24rem)] flex flex-col justify-end">
+                        {/* Scrollable message container with reverse column */}
+                        <div className="overflow-y-auto flex-1 px-4 flex   gap-2 flex-col-reverse">
+                            {messageStore
+                                .getConversationMessages(
+                                    selectedConversation.conversation_id
+                                )
+                                ?.map((msg, _) => {
+                                    const isMyMsg =
+                                        msg.author_id == currentUser?.id;
+                                    return (
+                                        <div
+                                            key={msg.id}
+                                            className={`flex justify-${
+                                                !isMyMsg ? "start" : "end"
+                                            }`}
+                                        >
+                                            {isMyMsg ? (
+                                                <div
+                                                    className={`bg-chatbubble-sender text-white px-4 py-2 rounded-lg max-w-xs`}
+                                                >
+                                                    {msg.content}
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className={`bg-chatbubble-recipient text-white px-4 py-2 rounded-lg max-w-xs`}
+                                                >
+                                                    {msg.content}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </div>
+                )}
+
                 <MessageBox submitHandler={handleMessageSubmit} />
             </div>
         </>

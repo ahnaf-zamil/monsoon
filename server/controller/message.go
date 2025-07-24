@@ -10,6 +10,7 @@ import (
 	"monsoon/util"
 	"monsoon/ws"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +35,7 @@ type MessageController struct {
 // @Failure      401,403,400      {object}  api.APIResponse
 // @Router       /message/user/{userId} [post]
 // @Security    BearerAuth
-func (ctrl *MessageController) MessageUserRoute(c *gin.Context) {
+func (ctrl *MessageController) CreateMessageUserRoute(c *gin.Context) {
 	// Validating input
 	req := &api.MessageCreateSchema{}
 	err := util.ValidateRequestInput(c, req)
@@ -115,13 +116,13 @@ func (ctrl *MessageController) MessageUserRoute(c *gin.Context) {
 // @Tags         messages
 // @Accept       json
 // @Produce      json
-// @Param        conversationId   path      int  true  "Recipient ID"
+// @Param        conversationId   path      int  true  "Conversation ID"
 // @Param        request  body     	api.MessageCreateSchema  true  "Message data"
 // @Success      201      {object}  api.APIResponse
 // @Failure      401,403,400,404      {object}  api.APIResponse
 // @Router       /message/conversation/{conversationId} [post]
 // @Security    BearerAuth
-func (ctrl *MessageController) MessageConversationRoute(c *gin.Context) {
+func (ctrl *MessageController) CreateMessageConversationRoute(c *gin.Context) {
 	// Validating input
 	req := &api.MessageCreateSchema{}
 	err := util.ValidateRequestInput(c, req)
@@ -173,4 +174,59 @@ func (ctrl *MessageController) MessageConversationRoute(c *gin.Context) {
 	ctrl.NATS_PUB.SendMsgNATS(payload)
 
 	util.WriteAPIResponse(c, payload, rs, http.StatusCreated)
+}
+
+// @Summary      Get Messages
+// @Description  Get messages in a conversation
+// @Tags         messages
+// @Accept       json
+// @Produce      json
+// @Param        conversationId   path      int  true  "Conversation ID"
+// @Success      201      {object}  api.APIResponse
+// @Failure      401,404      {object}  api.APIResponse
+// @Router       /message/conversation/{conversationId} [get]
+// @Security    BearerAuth
+func (ctrl *MessageController) GetMessageConversationRoute(c *gin.Context) {
+	rs := &api.APIResponse{}
+
+	author, ok := util.GetCurrentUser(c)
+	if !ok {
+		util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+		return
+	}
+
+	conversationID := c.Param("conversationID")
+
+	convo, err := ctrl.ConversationDB.GetUserConversationByID(c.Request.Context(), conversationID, author.ID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			util.WriteAPIError(c, "Conversation not found", rs, http.StatusNotFound)
+			return
+		}
+		log.Println(err)
+		util.HandleServerError(c, rs, err)
+		return
+	}
+
+	countStr := c.DefaultQuery("count", "10")
+	count, err := strconv.Atoi(countStr)
+	if err != nil {
+		util.WriteAPIError(c, "Invalid 'count' query", rs, http.StatusBadRequest)
+	}
+
+	messages, err := ctrl.MsgDB.GetConversationMessages(c.Request.Context(), convo.ConversationID, count)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// In case there are no messages in this convo yet
+			arr := [...]any{}
+			util.WriteAPIResponse(c, arr, rs, http.StatusOK)
+			return
+		}
+		log.Println(err)
+		util.HandleServerError(c, rs, err)
+		return
+	}
+
+	util.WriteAPIResponse(c, messages, rs, http.StatusCreated)
+
 }

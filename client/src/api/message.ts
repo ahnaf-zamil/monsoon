@@ -23,3 +23,10 @@ export const sendMessageToConversation = async (
     );
     return response.data;
 };
+
+export const fetchConversationMessages = async (conversationID: string, count: number): Promise<IAPIResponse<any>> => {
+    const response = await apiClient.get(
+        `/message/conversation/${conversationID}?count=${count}`
+    );
+    return response.data;
+}

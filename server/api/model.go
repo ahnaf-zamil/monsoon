@@ -3,12 +3,12 @@ package api
 /* Data models for internal use and for JSON marshalling for API requests */
 
 type MessageModel struct {
-	ID             string `json:"id"`
-	Content        string `json:"content"`
-	EditedAt       any    `json:"edited_at"`
-	CreatedAt      int64  `json:"created_at"`
-	AuthorID       string `json:"author_id"`
-	ConversationID string `json:"conversation_id,omitempty"` // Optional
+	ID             string `db:"id" json:"id"`
+	Content        string `db:"content" json:"content"`
+	EditedAt       any    `db:"edited_at" json:"edited_at"`
+	CreatedAt      int64  `db:"created_at" json:"created_at"`
+	AuthorID       string `db:"author_id" json:"author_id"`
+	ConversationID string `db:"conversation_id" json:"conversation_id,omitempty"` // Optional
 	Deleted        bool   `json:"-"`
 }
 

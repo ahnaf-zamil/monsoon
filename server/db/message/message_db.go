@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"monsoon/api"
 	"monsoon/db"
 	"monsoon/db/tables"
 	"time"
@@ -17,6 +18,7 @@ type MessageDB struct {
 
 type IMessageDB interface {
 	CreateMessage(ctx context.Context, messageID int64, conversationID string, authorID string, content any) error
+	GetConversationMessages(ctx context.Context, conversationID string, count int) ([]api.MessageModel, error)
 }
 
 func GetMessageDB() IMessageDB {
@@ -48,6 +50,29 @@ func (m *MessageDB) CreateMessage(ctx context.Context, messageID int64, conversa
 	}
 
 	return nil
+}
+
+func (m *MessageDB) GetConversationMessages(ctx context.Context, conversationID string, count int) ([]api.MessageModel, error) {
+	// Generate the SELECT columns
+	cols := []db.DBColumn{tables.ColMessageID, tables.ColMessageConversationID, tables.ColMessageAuthorID, tables.ColMessageContent, tables.ColMessageCreatedAt, tables.ColMessageEditedAt, tables.ColMessageDeleted}
+	selected_columns := db.GenerateDBQueryFields(cols)
+
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1 ORDER BY %s DESC LIMIT $2",
+		selected_columns,
+		tables.TableMessages, tables.ColMessageConversationID.Column, tables.ColMessageCreatedAt.Column)
+
+	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
+	rows, err := m.MsgDB.DBPool.Query(ctx, query, conversationID, count)
+	if err != nil {
+		return nil, err
+	}
+
+	messages, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.MessageModel])
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, err
 }
 
 func insertMessage(tx pgx.Tx, ctx context.Context, messageID int64, conversationID string, authorID string, content any, createdAt int64, deleted bool) error {

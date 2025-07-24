@@ -85,7 +85,6 @@ export const Login: React.FC = () => {
 
     return (
         <div className="flex justify-center items-center flex-col h-[calc(100svh)] dark:bg-black">
-            {/* <h1 className="text-teal-400 font-bold text-4xl mb-6">Monsoon</h1> */}
             <img src={MonsoonLogo} className="w-84 pointer-none mb-2" alt="" />
             <div className="flex justify-center items-center ">
                 <form

@@ -26,7 +26,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
 
     return (
         <>
-            <div className="absolute bottom-0 flex-grow h-20 px-5 flex items-center gap-2 w-full">
+            <div className="bg-chatbox absolute bottom-0 flex-grow h-20 px-5 flex items-center gap-2 w-full">
                 {/* {imgBase64 && (
           <div className="absolute top-0 -translate-y-full">
             <div className="relative w-24">

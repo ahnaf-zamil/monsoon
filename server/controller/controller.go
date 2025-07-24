@@ -30,8 +30,9 @@ func InitControllers(r *gin.Engine) {
 	auth := api.Group("/auth")
 
 	msg_ctrl := &MessageController{UserDB: userDB, NATS_PUB: &ws.NATSPublisher{}, ConversationDB: convoDB, MsgDB: msgDB}
-	msg.POST("/user/:recipientID", authMiddleware, msg_ctrl.MessageUserRoute)
-	msg.POST("/conversation/:conversationID", authMiddleware, msg_ctrl.MessageConversationRoute)
+	msg.POST("/user/:recipientID", authMiddleware, msg_ctrl.CreateMessageUserRoute)
+	msg.POST("/conversation/:conversationID", authMiddleware, msg_ctrl.CreateMessageConversationRoute)
+	msg.GET("/conversation/:conversationID", authMiddleware, msg_ctrl.GetMessageConversationRoute)
 
 	auth_ctrl := &AuthController{UserDB: userDB, PasswordHasher: passHasher, TokenHelper: tokenHelper}
 	auth.POST("/create", auth_ctrl.AuthRegistrationRoute)
