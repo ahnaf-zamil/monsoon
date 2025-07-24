@@ -50,6 +50,10 @@ func (n *NATSPublisher) InitMsgListener() {
 
 		// Looping over all sockets in the room and forwarding the message to them
 		for _, s := range sock_list {
+			if s == nil {
+				continue
+			}
+
 			if err := n.W.DispatchEvent(s, OpMessageCreate, msg); err != nil {
 				// Closing connection in case of write error, client-side should reconnect
 				defer s.WsConn.Close()

@@ -58,6 +58,10 @@ func (w *WebSocketHandler) RegisterSocketClient(wsConn *websocket.Conn, userID s
 // Handles any socket disconnection event
 func HandleSocketDisconnect(client_s *Socket) {
 	// Removes socket from the sock list state
+	if client_s == nil {
+		return
+	}
+
 	mu.RLock()
 	log.Printf("Disconnected client: %s (%s)\n", client_s.ID, client_s.WsConn.RemoteAddr())
 	RemoveSocketFromList(client_s)
@@ -132,4 +136,5 @@ func (w *WebSocketHandler) ConnectionHandler(c *gin.Context) {
 	}
 	// Handle disconnection to cleanup socket and room states
 	HandleSocketDisconnect(client_s)
+	// util.PrettyPrintSyncMap(GetRoomState())
 }
