@@ -16,17 +16,18 @@ export class CryptoHelper {
             false,
             ["encrypt"],
         );
-        const encryptedBuffer = await crypto.subtle.encrypt(
+
+        const ciphertext = await crypto.subtle.encrypt(
             {
                 name: "AES-GCM",
                 iv: nonce as BufferSource,
-                tagLength: 128,
+                tagLength: 128, // 16 bytes
             },
             cryptoKey,
             plaintext as BufferSource,
         );
 
-        return new Uint8Array(encryptedBuffer);
+        return new Uint8Array(ciphertext);
     };
 
     static AESGCMDecrypt = async (
@@ -42,22 +43,17 @@ export class CryptoHelper {
             ["decrypt"],
         );
 
-        try {
-            const decryptedBuffer = await crypto.subtle.decrypt(
-                {
-                    name: "AES-GCM",
-                    iv: nonce as BufferSource,
-                    tagLength: 128,
-                },
-                cryptoKey,
-                ciphertext as BufferSource,
-            );
+        const decryptedBuffer = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: nonce as BufferSource,
+                tagLength: 128,
+            },
+            cryptoKey,
+            ciphertext as BufferSource,
+        );
 
-            return new Uint8Array(decryptedBuffer);
-        } catch (error) {
-            console.error("Seed decryption failed:", error);
-            throw new Error("Decryption failed.");
-        }
+        return new Uint8Array(decryptedBuffer);
     };
 
     static deriveKey = async (

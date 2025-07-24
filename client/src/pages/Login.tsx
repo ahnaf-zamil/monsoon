@@ -75,8 +75,6 @@ export const Login: React.FC = () => {
             }
 
             await storeSeedSecure(decryptedSeed);
-            // const keys = CryptoHelper.generateClientKeyPair(decryptedSeed);
-            // console.log(keys);
 
             window.location.href = "/";
         } catch (e) {

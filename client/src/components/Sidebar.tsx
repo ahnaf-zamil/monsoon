@@ -1,25 +1,19 @@
 import type React from "react";
 import { useInboxStore } from "../store/inbox";
 import { InboxEntry } from "./InboxEntry";
-import { useEffect, useState } from "react";
 import { useCurrentUser } from "../context/AuthContext";
 
 export const Sidebar: React.FC = () => {
     const inboxState = useInboxStore();
 
-    const [ready, setReady] = useState<boolean>(false);
     const currentUser = useCurrentUser();
-
-    useEffect(() => {
-        setReady(inboxState.conversations.length > 0);
-    }, [inboxState.conversations]);
 
     return (
         <>
             <div className="h-[calc(100svh)] w-full block sm:w-96 sm:block relative border-0 sm:border-r-[1px] sm:border-r-neutral-200 dark:sm:border-r-neutral-800">
                 <div className="absolute top-0 left-0 right-0 bottom-0 p-2 flex flex-col justify-between">
                     <div className="grid gap-2 overflow-y-auto">
-                        {ready ? (
+                        {inboxState.isSynced ? (
                             inboxState.conversations.map((convo, _) => (
                                 <InboxEntry
                                     conversationID={convo.conversation_id}
@@ -44,7 +38,7 @@ export const Sidebar: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <div className="w-12 aspect-square rounded-full overflow-hidden">
                                 <img
-                                    src=""
+                                    src={undefined}
                                     alt=""
                                     className="object-cover w-full h-full"
                                 />

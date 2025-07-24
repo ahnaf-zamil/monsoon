@@ -4,10 +4,10 @@ import { dispatchWebSocketEvent } from "../ws/events";
 import { useEffect, useRef } from "react";
 import { log } from "../utils";
 
-export function useWSHeartbeat(
+export const useWSHeartbeat = (
     socket: WebSocket | null,
     onDisconnect: () => void,
-) {
+) => {
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const cleanup = () => {
@@ -71,4 +71,4 @@ export function useWSHeartbeat(
             cleanup();
         };
     }, [socket, onDisconnect]);
-}
+};

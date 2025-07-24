@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { IInboxEntry } from "../ws/types";
 
 interface InboxState {
+    isSynced: boolean;
     conversations: IInboxEntry[];
     syncConversations: (convos: IInboxEntry[]) => void;
 
@@ -11,11 +12,12 @@ interface InboxState {
 }
 
 export const useInboxStore = create<InboxState>((set, get) => ({
+    isSynced: false,
     conversations: [],
     selectedConvoID: null,
 
     syncConversations: (convos: IInboxEntry[]) =>
-        set((state) => ({ ...state, conversations: convos })),
+        set((state) => ({ ...state, conversations: convos, isSynced: true })),
     setSelectedConvoID: (convoID: string) =>
         set((state) => ({ ...state, selectedConvoID: convoID })),
 

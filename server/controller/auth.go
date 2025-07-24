@@ -120,11 +120,9 @@ func (ctrl *AuthController) AuthFetchUserSalt(c *gin.Context) {
 		tables.ColUserEmail: req.Email,
 	}
 	user, _ := ctrl.UserDB.GetUserByAnyField(c.Request.Context(), fields)
-	// No need for error checks, auth wont exist if user doesnt exist
-	userAuth, _ := ctrl.UserDB.GetUserAuthByID(c.Request.Context(), user.ID)
 
 	var salt []byte
-	if userAuth == nil {
+	if user == nil {
 		// Return dummy salt to prevent enumeration
 		salt = make([]byte, 32) // 32 byte random salt
 		_, err := rand.Read(salt)
@@ -133,6 +131,7 @@ func (ctrl *AuthController) AuthFetchUserSalt(c *gin.Context) {
 			return
 		}
 	} else {
+		userAuth, _ := ctrl.UserDB.GetUserAuthByID(c.Request.Context(), user.ID)
 		salt = userAuth.PasswordSalt
 	}
 

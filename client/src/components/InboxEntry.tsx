@@ -29,8 +29,8 @@ export const InboxEntry: React.FC<Props> = (props) => {
                 <div className="relative">
                     <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center bg-purple-100 text-purple-700">
                         <img
-                            src=""
-                            alt="profile picture"
+                            src={undefined}
+                            alt=""
                             className="object-cover w-full h-full"
                         />
                     </div>

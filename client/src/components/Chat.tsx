@@ -13,7 +13,7 @@ export const Chat: React.FC = () => {
 
         const resp = await sendMessageToConversation(
             selectedConversation.conversation_id,
-            content
+            content,
         );
         if (!resp.error) {
             console.log(resp.data);

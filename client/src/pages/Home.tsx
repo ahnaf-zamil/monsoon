@@ -1,34 +1,10 @@
 import type React from "react";
 import { Sidebar } from "../components/Sidebar";
 import { Chat } from "../components/Chat";
-import { useContext, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
-import { useWebSocket } from "../context/SocketContext";
-import type { IInboxEntry, IWebSocketDispatch } from "../ws/types";
-import { OPCODES } from "../ws/opcodes";
-import { useInboxStore } from "../store/inbox";
+import { useInboxSocketHandler } from "../hooks/InboxSocket";
 
 export const Home: React.FC = () => {
-    const inboxState = useInboxStore();
-    const user = useContext(AuthContext);
-    const socket = useWebSocket();
-
-    useEffect(() => {
-        if (user && socket) {
-            // TODO: add state management and separate socket event handlers
-            const handleMessage = (e: MessageEvent) => {
-                const payload: IWebSocketDispatch<IInboxEntry[]> = JSON.parse(
-                    e.data,
-                );
-
-                if (payload.opcode == OPCODES.RoomSync) {
-                    inboxState.syncConversations(payload.data);
-                }
-            };
-
-            socket.addEventListener("message", handleMessage);
-        }
-    }, []);
+    useInboxSocketHandler();
 
     return (
         <>
