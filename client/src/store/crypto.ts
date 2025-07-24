@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { log } from "../utils";
 
 interface CryptoState {
     signingKey: Uint8Array | null;
@@ -12,7 +13,7 @@ export const useCryptoStore = create<CryptoState>((set, get) => ({
     encryptionKey: null,
 
     setKeys: (signingKey: Uint8Array, encryptionKey: Uint8Array) => {
-        console.log("Storing keys in state", signingKey, encryptionKey);
+        log("info", "stored encryption and signing keys in memory");
         set((state) => ({ ...state, signingKey, encryptionKey }));
     },
 

@@ -16,8 +16,9 @@ export const useInboxStore = create<InboxState>((set, get) => ({
     conversations: [],
     selectedConvoID: null,
 
-    syncConversations: (convos: IInboxEntry[]) =>
-        set((state) => ({ ...state, conversations: convos, isSynced: true })),
+    syncConversations: (convos: IInboxEntry[]) => {
+        set((state) => ({ ...state, conversations: convos, isSynced: true }));
+    },
     setSelectedConvoID: (convoID: string) =>
         set((state) => ({ ...state, selectedConvoID: convoID })),
 

@@ -3,4 +3,5 @@ export const OPCODES = {
     HeartbeatAck: "heartbeat_ack",
     HeartbeatInit: "heartbeat_init",
     RoomSync: "room_sync",
+    MessageCreate: "message_create",
 };

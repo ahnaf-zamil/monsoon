@@ -7,9 +7,11 @@ interface MessageState {
     };
     storeMessages: (
         conversationID: string,
-        newMessages: IMessageData[]
+        newMessages: IMessageData[],
     ) => void;
-    getConversationMessages: (conversationID: string) => IMessageData[] | undefined;
+    getConversationMessages: (
+        conversationID: string,
+    ) => IMessageData[] | undefined;
 }
 
 export const useMessageStore = create<MessageState>((set, get) => ({
@@ -29,7 +31,9 @@ export const useMessageStore = create<MessageState>((set, get) => ({
             };
         });
     },
-    getConversationMessages: (conversationID: string): IMessageData[] | undefined => {
+    getConversationMessages: (
+        conversationID: string,
+    ): IMessageData[] | undefined => {
         const state = get();
         const messages = state.messages[conversationID];
         return messages;

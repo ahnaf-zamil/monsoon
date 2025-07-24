@@ -9,6 +9,8 @@ import { AuthContext } from "./AuthContext";
 import { getAccessToken } from "../api/api";
 import { useWSHeartbeat } from "../hooks/Heartbeat";
 import { log } from "../utils";
+import { useInboxSocketHandler } from "../hooks/InboxSocket";
+import { useMessageSocketHandler } from "../hooks/MessageSocket";
 
 export const SocketContext = createContext<WebSocket | null>(null);
 
@@ -25,6 +27,8 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     };
 
     useWSHeartbeat(socket, onDisconnect);
+    useInboxSocketHandler(socket);
+    useMessageSocketHandler(socket);
 
     useEffect(() => {
         if (currentUser && !socket) {
@@ -42,6 +46,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         socket.addEventListener("close", (_) => {
             log("error", "disconnected from WebSocket endpoint");
             setSocket(null);
+        });
+
+        socket.addEventListener("message", (e) => {
+            log("debug", `socket message: ${e.data}`);
         });
     }, [socket]);
 

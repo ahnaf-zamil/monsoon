@@ -9,6 +9,7 @@ import { useInboxStore } from "../store/inbox";
 import { useEffect } from "react";
 import { useMessageStore } from "../store/message";
 import { useCurrentUser } from "../context/AuthContext";
+import { log } from "../utils";
 
 export const Chat: React.FC = () => {
     const inboxStore = useInboxStore();
@@ -21,11 +22,9 @@ export const Chat: React.FC = () => {
 
         const resp = await sendMessageToConversation(
             selectedConversation.conversation_id,
-            content
+            content,
         );
-        if (!resp.error) {
-            console.log(resp.data);
-        } else {
+        if (resp.error) {
             console.error(resp.message);
         }
     };
@@ -37,10 +36,13 @@ export const Chat: React.FC = () => {
 
                 const msg = messageStore.getConversationMessages(convoID);
                 if (msg == undefined) {
-                    console.log("No msg in cache, fetching");
+                    log(
+                        "debug",
+                        `convo ${convoID} not cached, fetching messages`,
+                    );
                     const resp = await fetchConversationMessages(
                         selectedConversation.conversation_id,
-                        20
+                        20,
                     );
 
                     if (!resp.error) {
@@ -49,7 +51,7 @@ export const Chat: React.FC = () => {
                         console.error(resp.error);
                     }
                 } else {
-                    console.log("Has msg in cache");
+                    log("debug", `convo ${convoID} has cached messages`);
                 }
             })();
         }
@@ -78,7 +80,7 @@ export const Chat: React.FC = () => {
                         <div className="overflow-y-auto flex-1 px-4 flex   gap-2 flex-col-reverse">
                             {messageStore
                                 .getConversationMessages(
-                                    selectedConversation.conversation_id
+                                    selectedConversation.conversation_id,
                                 )
                                 ?.map((msg, _) => {
                                     const isMyMsg =

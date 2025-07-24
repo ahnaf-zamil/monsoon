@@ -56,19 +56,6 @@ func main() {
 	}
 	defer db.CloseConnection()
 
-	// Initialize NATS connection and drain connection upon return
-	n := &ws.NATSPublisher{}
-	nc, err := n.InitNATS(conf.NATSUrl)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err := nc.Drain()
-		if err != nil {
-			log.Println("NATS connection drain error:", err)
-		}
-	}()
-
 	// Initialize Gin with CORS, and register controller routes
 	r := gin.Default()
 	if !(conf.IsDev) {
@@ -92,6 +79,19 @@ func main() {
 
 	// Here we go
 	log.Println("Server started on port", conf.Port)
+
+	// Initialize NATS connection and drain connection upon return
+	n := &ws.NATSPublisher{W: wsHandler}
+	nc, err := n.InitNATS(conf.NATSUrl)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err := nc.Drain()
+		if err != nil {
+			log.Println("NATS connection drain error:", err)
+		}
+	}()
 
 	wsHandler.StartHeartbeat()
 	err = http.ListenAndServe("0.0.0.0:"+conf.Port, r)
