@@ -36,6 +36,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             const socket = new WebSocket(
                 import.meta.env.VITE_BASE_URL + `/ws?token=${accessToken}`,
             );
+            log("info", "connected to WebSocket endpoint")
             setSocket(socket);
         }
     }, [socket, currentUser.isSuccess]);
