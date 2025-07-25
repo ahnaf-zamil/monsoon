@@ -10,12 +10,32 @@ import { useEffect } from "react";
 import { useMessageStore } from "../store/message";
 import { useCurrentUser } from "../context/AuthContext";
 import { log } from "../utils";
+import { useUserCacheStore } from "../store/user";
+import { useQuery } from "@tanstack/react-query";
+import type { IMessageData } from "../api/types";
 
 export const Chat: React.FC = () => {
     const inboxStore = useInboxStore();
+    const userCache = useUserCacheStore();
     const messageStore = useMessageStore();
     const currentUser = useCurrentUser();
     const selectedConversation = inboxStore.getSelectedConversation();
+
+    const messageQuery = useQuery({
+        queryKey: ["chat-messages"],
+        queryFn: async (): Promise<IMessageData[]> => {
+            const resp = await fetchConversationMessages(
+                selectedConversation!.conversation_id,
+                20,
+            );
+            if (resp.error) {
+                throw Error(resp.message);
+            }
+            return resp.data;
+        },
+        retry: true,
+        enabled: false,
+    });
 
     const handleMessageSubmit = async (content: string) => {
         if (!selectedConversation) return;
@@ -29,34 +49,50 @@ export const Chat: React.FC = () => {
         }
     };
 
+    const fetchAndCacheConversationUser = async (
+        conversationID: string,
+        userID: string,
+    ) => {
+        // WIP: Fetch DM user data from API and store in cache
+        const cachedUser = userCache.getUser(userID);
+
+        if (!cachedUser) {
+            console.log("User data not cached");
+        } else {
+            console.log("User data is cached");
+        }
+    };
+
     useEffect(() => {
         if (selectedConversation != null) {
-            (async () => {
-                const convoID = selectedConversation.conversation_id;
+            const convoID = selectedConversation.conversation_id;
 
-                const msg = messageStore.getConversationMessages(convoID);
-                if (msg == undefined) {
-                    log(
-                        "debug",
-                        `convo ${convoID} not cached, fetching messages`,
-                    );
-                    const resp = await fetchConversationMessages(
-                        selectedConversation.conversation_id,
-                        20,
-                    );
+            if (selectedConversation.type === "DM") {
+                fetchAndCacheConversationUser(
+                    selectedConversation.conversation_id,
+                    selectedConversation.user_id!,
+                ); // user_id will always be present in DM conversations
+            }
 
-                    if (!resp.error) {
-                        messageStore.storeMessages(convoID, resp.data);
-                    } else {
-                        console.error(resp.error);
-                    }
-                } else {
-                    log("debug", `convo ${convoID} has cached messages`);
-                }
-            })();
+            const msg = messageStore.getConversationMessages(convoID);
+            if (msg == undefined) {
+                log("debug", `convo ${convoID} not cached, fetching messages`);
+
+                messageQuery.refetch();
+            } else {
+                log("debug", `convo ${convoID} has cached messages`);
+            }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedConversation]);
+
+    useEffect(() => {
+        if (selectedConversation && messageQuery.isSuccess) {
+            messageStore.storeMessages(
+                selectedConversation?.conversation_id,
+                messageQuery.data!,
+            );
+        }
+    }, [messageQuery.isSuccess, messageQuery.isRefetching]);
 
     return (
         <>
