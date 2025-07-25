@@ -33,7 +33,7 @@ export const useCurrentUser = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [currentUser, setCurrentUser] = useState<IUserState>(defaults);
 
-    const { isPending, isError, error, data, isSuccess } = useQuery({
+    const { isPending, isError, error, data, isSuccess, refetch } = useQuery({
         queryKey: ["current-user"],
         queryFn: async (): Promise<IUser | undefined> => {
             let accessToken = getAccessToken();
@@ -52,6 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return resp.data;
         },
         retry: false,
+        enabled: false,
+        refetchInterval: false,
     });
 
     useEffect(() => {
@@ -63,6 +65,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             isSuccess,
         });
     }, [isPending, isError, error, data, isSuccess]);
+
+    useEffect(() => {
+        refetch();
+    }, []);
 
     return (
         <AuthContext.Provider value={currentUser}>

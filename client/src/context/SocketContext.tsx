@@ -2,6 +2,7 @@ import {
     createContext,
     useContext,
     useEffect,
+    useRef,
     useState,
     type ReactNode,
 } from "react";
@@ -16,43 +17,90 @@ const SocketContext = createContext<WebSocket | null>(null);
 
 export const useWebSocket = () => useContext(SocketContext);
 
+const reconnectInterval = 4000; // 4 seconds
+
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
     const currentUser = useCurrentUser();
     const [socket, setSocket] = useState<WebSocket | null>(null);
+    const [connected, setConnected] = useState<boolean>(false);
+    const hasConnectedOnceRef = useRef<boolean>(false);
 
-    const onDisconnect = () => {
-        if (!socket) return;
-        socket.close();
+    const onNoHeartbeatAck = () => {
         log("warn", "disconnecting: no heartbeat ack");
+        socket?.close();
     };
 
-    useWSHeartbeat(socket, onDisconnect);
+    useWSHeartbeat(socket, connected, onNoHeartbeatAck);
     useInboxSocketHandler(socket);
     useMessageSocketHandler(socket);
+    const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+        null,
+    );
 
     useEffect(() => {
-        if (currentUser.isSuccess && !socket) {
+        // clear the reconnect timeout on mount
+        return () => {
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!currentUser.isSuccess || connected || socket) return;
+        const attemptConnection = () => {
             const accessToken = getAccessToken();
-            const socket = new WebSocket(
+            const newSocket = new WebSocket(
                 import.meta.env.VITE_BASE_URL + `/ws?token=${accessToken}`,
             );
-            log("info", "connected to WebSocket endpoint");
-            setSocket(socket);
+            log("info", "attempting connection to WebSocket endpoint");
+
+            setSocket(newSocket);
+            setConnected(true);
+
+            reconnectTimeoutRef.current = null;
+            hasConnectedOnceRef.current = true;
+        };
+
+        if (hasConnectedOnceRef.current) {
+            // if already connected once then this time attempt delayed reconnect
+            if (!reconnectTimeoutRef.current) {
+                reconnectTimeoutRef.current = setTimeout(
+                    attemptConnection,
+                    reconnectInterval,
+                ); // delay on reconnect
+            }
+        } else {
+            // connect asap on first time
+            attemptConnection();
         }
-    }, [socket, currentUser.isSuccess]);
+    }, [connected, currentUser.isSuccess, socket]);
 
     useEffect(() => {
-        if (!socket) return;
+        const handleOpen = () => {
+            log("info", "connected to WebSocket endpoint");
+        };
 
-        socket.addEventListener("close", () => {
+        const handleClose = () => {
             log("error", "disconnected from WebSocket endpoint");
             setSocket(null);
-        });
+            setConnected(false);
+        };
 
-        socket.addEventListener("message", (e) => {
+        const handleMessage = (e: MessageEvent) => {
             log("debug", `socket message: ${e.data}`);
-        });
-    }, [socket]);
+        };
+
+        socket?.addEventListener("close", handleClose);
+        socket?.addEventListener("open", handleOpen);
+        socket?.addEventListener("message", handleMessage);
+
+        return () => {
+            socket?.removeEventListener("open", handleOpen);
+            socket?.removeEventListener("close", handleClose);
+            socket?.removeEventListener("message", handleMessage);
+        };
+    }, [connected, socket]);
 
     return (
         <SocketContext.Provider value={socket}>

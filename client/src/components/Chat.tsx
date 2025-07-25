@@ -21,22 +21,6 @@ export const Chat: React.FC = () => {
     const currentUser = useCurrentUser();
     const selectedConversation = inboxStore.getSelectedConversation();
 
-    const messageQuery = useQuery({
-        queryKey: ["chat-messages"],
-        queryFn: async (): Promise<IMessageData[]> => {
-            const resp = await fetchConversationMessages(
-                selectedConversation!.conversation_id,
-                20,
-            );
-            if (resp.error) {
-                throw Error(resp.message);
-            }
-            return resp.data;
-        },
-        retry: true,
-        enabled: false,
-    });
-
     const handleMessageSubmit = async (content: string) => {
         if (!selectedConversation) return;
 
@@ -63,6 +47,22 @@ export const Chat: React.FC = () => {
         }
     };
 
+    const messageQuery = useQuery({
+        queryKey: ["chat-messages"],
+        queryFn: async (): Promise<IMessageData[]> => {
+            const resp = await fetchConversationMessages(
+                selectedConversation!.conversation_id,
+                20,
+            );
+            if (resp.error) {
+                throw Error(resp.message);
+            }
+            return resp.data;
+        },
+        retry: false,
+        enabled: false,
+    });
+
     useEffect(() => {
         if (selectedConversation != null) {
             const convoID = selectedConversation.conversation_id;
@@ -86,13 +86,15 @@ export const Chat: React.FC = () => {
     }, [selectedConversation]);
 
     useEffect(() => {
-        if (selectedConversation && messageQuery.isSuccess) {
-            messageStore.storeMessages(
-                selectedConversation?.conversation_id,
-                messageQuery.data!,
-            );
+        if (selectedConversation?.conversation_id && messageQuery.isSuccess) {
+            if (messageQuery.data.length > 0) {
+                messageStore.storeMessages(
+                    selectedConversation?.conversation_id,
+                    messageQuery.data!,
+                );
+            }
         }
-    }, [messageQuery.isSuccess, messageQuery.isRefetching]);
+    }, [messageQuery.data]);
 
     return (
         <>
@@ -111,7 +113,7 @@ export const Chat: React.FC = () => {
                         </>
                     </h1>
                 </div>
-                {selectedConversation && (
+                {selectedConversation?.conversation_id && (
                     <div className="bg-chatbox fixed top-14 bottom-20 min-h-0 sm:w-[calc(100svw-24rem)] flex flex-col justify-end">
                         {/* Scrollable message container with reverse column */}
                         <div className="overflow-y-auto flex-1 px-4 flex   gap-2 flex-col-reverse">

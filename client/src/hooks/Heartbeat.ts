@@ -6,7 +6,8 @@ import { log } from "../utils";
 
 export const useWSHeartbeat = (
     socket: WebSocket | null,
-    onDisconnect: () => void,
+    connected: boolean,
+    onNoHeartbeatAck: () => void,
 ) => {
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -36,7 +37,7 @@ export const useWSHeartbeat = (
 
                 // start heartbeat loop
                 intervalRef.current = setInterval(() => {
-                    if (!socket.OPEN) return;
+                    if (!connected) return;
 
                     dispatchWebSocketEvent(socket, OPCODES.Heartbeat, null);
                     log("debug", "heartbeat sent");
@@ -49,7 +50,7 @@ export const useWSHeartbeat = (
                                 "no heartbeat ACK received within timeout",
                             );
                             cleanup();
-                            onDisconnect();
+                            onNoHeartbeatAck();
                         }, payload.data.timeout);
                     }
                 }, payload.data.interval);
@@ -70,5 +71,5 @@ export const useWSHeartbeat = (
             socket.removeEventListener("message", handleMessage);
             cleanup();
         };
-    }, [socket]);
+    }, [connected, socket]);
 };
