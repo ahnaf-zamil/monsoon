@@ -1,6 +1,6 @@
 import axios from "axios";
 
-let accessToken: string;
+let accessToken: string | null;
 
 export const apiClient = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL + "/api",
@@ -10,7 +10,7 @@ export const apiClient = axios.create({
     validateStatus: () => true, // Axios shouldn't handle status codes
 });
 
-export const setAPIAccessToken = (token: string) => {
+export const setAPIAccessToken = (token: string | null) => {
     accessToken = token;
     apiClient.defaults.headers.common["Authorization"] =
         `Bearer ${accessToken}`;

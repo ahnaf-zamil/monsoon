@@ -16,7 +16,7 @@ func main() {
 		log.Println("No .env file found")
 	}
 
-	conf := util.LoadConfig()
+	conf := util.LoadDotenvConfig()
 	db.CreateAppDBSchemas(conf)
 	db.CreateMsgDBSchemas(conf)
 }

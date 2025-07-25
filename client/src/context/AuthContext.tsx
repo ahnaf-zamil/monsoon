@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { IUser } from "../types";
 import { getAPIAccessToken, getAuthenticatedUser } from "../api/auth";
-import { getAccessToken, setAPIAccessToken } from "../api/api";
+import { setAPIAccessToken } from "../api/api";
 import { useQuery } from "@tanstack/react-query";
 
 interface IUserState {
@@ -16,6 +16,7 @@ interface IUserState {
     isSuccess: boolean;
     error: Error | null;
     data: IUser | undefined;
+    refetchUser: () => Promise<void>;
 }
 
 const defaults = {
@@ -24,6 +25,7 @@ const defaults = {
     isSuccess: false,
     error: null,
     data: undefined,
+    refetchUser: async () => {},
 };
 
 export const AuthContext = createContext<IUserState>(defaults);
@@ -36,16 +38,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { isPending, isError, error, data, isSuccess, refetch } = useQuery({
         queryKey: ["current-user"],
         queryFn: async (): Promise<IUser | undefined> => {
-            let accessToken = getAccessToken();
-            if (!accessToken) {
-                const resp = await getAPIAccessToken();
-                if (resp.error) {
-                    throw Error(resp.message);
-                }
-                accessToken = resp.data;
-                setAPIAccessToken(accessToken);
+            let resp = await getAPIAccessToken();
+            if (resp.error) {
+                throw Error(resp.message);
             }
-            const resp = await getAuthenticatedUser();
+            setAPIAccessToken(resp.data);
+            resp = await getAuthenticatedUser();
             if (resp.error) {
                 throw Error(resp.message);
             }
@@ -63,8 +61,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             error,
             data,
             isSuccess,
+            refetchUser: async () => {
+                await refetch();
+            },
         });
-    }, [isPending, isError, error, data, isSuccess]);
+    }, [isPending]);
 
     useEffect(() => {
         refetch();

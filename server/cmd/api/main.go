@@ -42,7 +42,14 @@ func main() {
 		log.Println("No .env file found")
 	}
 
-	conf := util.LoadConfig()
+	var conf *util.Config
+	if util.IsDevEnv() {
+		// For dev, use .env config
+		conf = util.LoadDotenvConfig()
+	} else {
+		// TODO: Use a shared configuration database for PROD e.g Hashicorp Vault. For now default to .env
+		conf = util.LoadDotenvConfig()
+	}
 
 	// Initialize snowflake ID generator
 	lib.InitSnowflakeNode()
@@ -58,7 +65,7 @@ func main() {
 
 	// Initialize Gin with CORS, and register controller routes
 	r := gin.Default()
-	if !(conf.IsDev) {
+	if !(util.IsDevEnv()) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 

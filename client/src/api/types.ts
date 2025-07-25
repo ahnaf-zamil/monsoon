@@ -19,3 +19,15 @@ export interface IMessageData {
     created_at: number;
     edited_at: number;
 }
+
+export class APIError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+        super(message);
+        this.name = "APIError";
+        this.status = status;
+
+        Object.setPrototypeOf(this, APIError.prototype);
+    }
+}

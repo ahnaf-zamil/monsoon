@@ -229,17 +229,7 @@ func (ctrl *AuthController) UserGetAccessToken(c *gin.Context) {
 		return
 	}
 
-	var exp int64
-
-	config := util.GetConfig()
-	if config.IsDev {
-
-		// 2 hour expiry in dev env, PITA to hit the token route every few minutes
-		exp = 2 * 60 * 60
-	} else {
-		exp = api.EXPIRY_ACCESS_TOKEN
-	}
-	accessToken, err := ctrl.TokenHelper.CreateNewToken(user.ID, exp)
+	accessToken, err := ctrl.TokenHelper.CreateNewToken(user.ID, api.EXPIRY_ACCESS_TOKEN)
 	if err != nil {
 		util.HandleServerError(c, rs, err)
 		return

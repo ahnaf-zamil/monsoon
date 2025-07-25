@@ -6,6 +6,7 @@ import (
 	"monsoon/db/app"
 	"monsoon/db/tables"
 	"monsoon/lib"
+	"monsoon/util"
 	"net/http"
 	"strings"
 
@@ -64,25 +65,29 @@ func AuthRequired(userDB app.IUserDB, jwt lib.IJWTTokenHelper) gin.HandlerFunc {
 		rs := &api.APIResponse{Err: true, Message: "Unauthorized"}
 
 		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
 		token := strings.TrimSpace(parts[1])
 		if token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
 		userID, err := jwt.VerifyToken(token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 
@@ -91,7 +96,8 @@ func AuthRequired(userDB app.IUserDB, jwt lib.IJWTTokenHelper) gin.HandlerFunc {
 		}
 		user, err := userDB.GetUserByAnyField(c.Request.Context(), fields)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, rs)
+			util.WriteAPIError(c, "Unauthorized", rs, http.StatusUnauthorized)
+			c.Abort()
 			return
 		}
 

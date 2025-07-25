@@ -86,7 +86,7 @@ func SetRefreshTokenCookie(c *gin.Context, refreshToken string) {
 	var secure bool
 	domain := c.Request.Host
 
-	if config.IsDev {
+	if IsDevEnv() {
 		sameSite = http.SameSiteLaxMode
 		secure = false
 		domain = "localhost"
