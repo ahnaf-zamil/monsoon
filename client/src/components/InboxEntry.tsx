@@ -1,6 +1,7 @@
 import type React from "react";
 import { formatUnixToLocalTime } from "../utils";
 import { useInboxStore } from "../store/inbox";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
     conversationID: string;
@@ -11,12 +12,13 @@ interface Props {
 
 export const InboxEntry: React.FC<Props> = (props) => {
     const inboxStore = useInboxStore();
+    const navigate = useNavigate()
     const selectedConversation = inboxStore.getSelectedConversation();
 
     return (
         <div
             onClick={() => {
-                inboxStore.setSelectedConvoID(props.conversationID);
+                navigate(`/conversations/${props.conversationID}`)
             }}
             className={
                 "hover:bg-neutral-900 rounded-md flex gap-3 p-3 items-center justify-between cursor-pointer " +

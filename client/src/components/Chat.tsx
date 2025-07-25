@@ -10,14 +10,14 @@ export const Chat: React.FC = () => {
     const inboxStore = useInboxStore();
     const currentUser = useCurrentUser();
     const selectedConversation = inboxStore.getSelectedConversation();
-    const messages = useMessagesForConversation(selectedConversation);
+    const { data } = useMessagesForConversation(selectedConversation);
 
     const handleMessageSubmit = async (content: string) => {
         if (!selectedConversation) return;
 
         const resp = await sendMessageToConversation(
             selectedConversation.conversation_id,
-            content,
+            content
         );
         if (resp.error) {
             console.error(resp.message);
@@ -45,7 +45,7 @@ export const Chat: React.FC = () => {
                     <div className="bg-chatbox fixed top-14 bottom-20 min-h-0 sm:w-[calc(100svw-24rem)] flex flex-col justify-end">
                         {/* Scrollable message container with reverse column */}
                         <div className="overflow-y-auto flex-1 px-4 flex   gap-2 flex-col-reverse">
-                            {messages?.map((msg) => {
+                            {data?.map((msg) => {
                                 const isMyMsg =
                                     msg.author_id == currentUser?.data?.id;
                                 return (

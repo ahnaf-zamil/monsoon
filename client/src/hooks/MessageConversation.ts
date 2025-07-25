@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { HttpStatusCode } from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { fetchConversationMessages } from "../api/message";
 import { type IMessageData, APIError } from "../api/types";
 import { useCurrentUser } from "../context/AuthContext";
@@ -10,15 +10,17 @@ import type { IInboxEntry } from "../ws/types";
 import { log } from "../utils";
 
 export const useMessagesForConversation = (
-    selectedConversation: IInboxEntry | undefined,
+    selectedConversation: IInboxEntry | undefined
 ) => {
+    const [loaded, setLoaded] = useState<boolean>(false);
+
     const userCache = useUserCacheStore();
     const messageStore = useMessageStore();
     const currentUser = useCurrentUser();
 
     const fetchAndCacheConversationUser = async (
         _conversationID: string,
-        userID: string,
+        userID: string
     ) => {
         // WIP: Fetch DM user data from API and store in cache
         const cachedUser = userCache.getUser(userID);
@@ -35,11 +37,12 @@ export const useMessagesForConversation = (
         queryFn: async (): Promise<IMessageData[]> => {
             const resp = await fetchConversationMessages(
                 selectedConversation!.conversation_id,
-                20,
+                20
             );
             if (resp.error) {
                 throw new APIError(resp.message, resp.status);
             }
+            setLoaded(true)
             return resp.data;
         },
         retry: false,
@@ -54,7 +57,7 @@ export const useMessagesForConversation = (
                 // Cache conversation user, WIP
                 fetchAndCacheConversationUser(
                     selectedConversation.conversation_id,
-                    selectedConversation.user_id!,
+                    selectedConversation.user_id!
                 ); // user_id will always be present in DM conversations
             }
 
@@ -62,6 +65,8 @@ export const useMessagesForConversation = (
             const msg = messageStore.getConversationMessages(convoID);
             if (msg == undefined) {
                 messageQuery.refetch();
+            } else {
+                setLoaded(true)
             }
         }
     }, [selectedConversation]);
@@ -77,12 +82,12 @@ export const useMessagesForConversation = (
                 ) {
                     messageStore.storeMessages(
                         selectedConversation?.conversation_id,
-                        messageQuery.data!,
+                        messageQuery.data!
                     );
                 } else {
                     log(
                         "warn",
-                        "Mismatched conversation data — skipping store",
+                        "Mismatched conversation data — skipping store"
                     );
                 }
             }
@@ -104,16 +109,19 @@ export const useMessagesForConversation = (
             messageQuery.error.status === HttpStatusCode.Unauthorized
         ) {
             retryAfterAuth();
-        } else {
+        } else if (
+            messageQuery.isError &&
+            messageQuery.error instanceof APIError
+        ) {
             log("error", "Unhandled error status:", messageQuery.error);
         }
     }, [messageQuery.isError, messageQuery.error]);
 
     if (selectedConversation) {
-        return messageStore.getConversationMessages(
-            selectedConversation.conversation_id,
-        );
+        return {data: messageStore.getConversationMessages(
+            selectedConversation.conversation_id
+        ), loaded};
     } else {
-        return [];
+        return {data: [], loaded};
     }
 };
