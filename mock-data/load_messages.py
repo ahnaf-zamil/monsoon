@@ -3,12 +3,15 @@
 import json
 from psycopg2.extras import execute_values
 from dotenv import load_dotenv
+from snowflake import SnowflakeGenerator
 import psycopg2
 import random
 import time
 import os
 
 load_dotenv()
+
+gen = SnowflakeGenerator(42)
 
 # Define user IDs
 user1_id = 1947592818079846400
@@ -36,7 +39,7 @@ f.close()
 
 # Assign message IDs
 for i, message in enumerate(conversation):
-    message["id"] = generate_snowflake()
+    message["id"] = next(gen)
     message["created_at"] = start_time + i * 20
 
 
