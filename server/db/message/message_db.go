@@ -18,7 +18,7 @@ type MessageDB struct {
 
 type IMessageDB interface {
 	CreateMessage(ctx context.Context, messageID int64, conversationID string, authorID string, content any) error
-	GetConversationMessages(ctx context.Context, conversationID string, count int) ([]api.MessageModel, error)
+	GetConversationMessages(ctx context.Context, conversationID string, count int, beforeMsgID any) ([]api.MessageModel, error)
 }
 
 func GetMessageDB() IMessageDB {
@@ -52,17 +52,27 @@ func (m *MessageDB) CreateMessage(ctx context.Context, messageID int64, conversa
 	return nil
 }
 
-func (m *MessageDB) GetConversationMessages(ctx context.Context, conversationID string, count int) ([]api.MessageModel, error) {
+func (m *MessageDB) GetConversationMessages(ctx context.Context, conversationID string, count int, before any) ([]api.MessageModel, error) {
 	// Generate the SELECT columns
 	cols := []db.DBColumn{tables.ColMessageID, tables.ColMessageConversationID, tables.ColMessageAuthorID, tables.ColMessageContent, tables.ColMessageCreatedAt, tables.ColMessageEditedAt, tables.ColMessageDeleted}
 	selected_columns := db.GenerateDBQueryFields(cols)
 
-	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1 ORDER BY %s DESC LIMIT $2",
-		selected_columns,
-		tables.TableMessages, tables.ColMessageConversationID.Column, tables.ColMessageCreatedAt.Column)
+	var rows pgx.Rows
+	var err error
+	if before != nil {
+		query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1 AND %s < $2::BIGINT ORDER BY %s DESC LIMIT $3",
+			selected_columns,
+			tables.TableMessages, tables.ColMessageConversationID.Column, tables.ColMessageID.Column, tables.ColMessageCreatedAt.Column)
+		rows, err = m.MsgDB.DBPool.Query(ctx, query, conversationID, before, count)
+		log.Println("omgoj")
+	} else {
+		query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1 ORDER BY %s DESC LIMIT $2",
+			selected_columns,
+			tables.TableMessages, tables.ColMessageConversationID.Column, tables.ColMessageCreatedAt.Column)
+		rows, err = m.MsgDB.DBPool.Query(ctx, query, conversationID, count)
+	}
 
 	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
-	rows, err := m.MsgDB.DBPool.Query(ctx, query, conversationID, count)
 	if err != nil {
 		return nil, err
 	}

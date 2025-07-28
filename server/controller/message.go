@@ -214,7 +214,13 @@ func (ctrl *MessageController) GetMessageConversationRoute(c *gin.Context) {
 		util.WriteAPIError(c, "Invalid 'count' query", rs, http.StatusBadRequest)
 	}
 
-	messages, err := ctrl.MsgDB.GetConversationMessages(c.Request.Context(), convo.ConversationID, count)
+	var beforeMsgID any
+	beforeMsgID = c.DefaultQuery("before", "")
+	if beforeMsgID == "" {
+		beforeMsgID = nil
+	}
+
+	messages, err := ctrl.MsgDB.GetConversationMessages(c.Request.Context(), convo.ConversationID, count, beforeMsgID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			// In case there are no messages in this convo yet

@@ -2,6 +2,7 @@ import type React from "react";
 import { useInboxStore } from "../store/inbox";
 import { InboxEntry } from "./InboxEntry";
 import { useCurrentUser } from "../context/AuthContext";
+import { ConversationSearch } from "./ConversationSearch";
 
 export const Sidebar: React.FC = () => {
     const inboxState = useInboxStore();
@@ -9,19 +10,20 @@ export const Sidebar: React.FC = () => {
     const currentUser = useCurrentUser();
 
     return (
-        <>
+        <div className="flex">
             <div className="h-[calc(100svh)] w-full block sm:w-96 sm:block relative border-0 sm:border-r-[1px] sm:border-r-neutral-200 dark:sm:border-r-neutral-800">
-                <div className="absolute top-0 left-0 right-0 bottom-0 p-2 flex flex-col justify-between">
+               <ConversationSearch/>
+                <div className="absolute top-28 left-0 right-0 bottom-0 p-2 mb-4 flex flex-col justify-between">
                     <div className="grid gap-2 overflow-y-auto">
                         {inboxState.isSynced ? (
                             inboxState.conversations.map((convo) => (
-                                <InboxEntry
+                                <><InboxEntry
                                     conversationID={convo.conversation_id}
                                     name={convo.name}
                                     last_msg_time={convo.updated_at}
                                     user_id={convo.user_id}
                                     key={convo.conversation_id}
-                                />
+                                /></>
                             ))
                         ) : (
                             <span className="animate-pulse">
@@ -61,6 +63,6 @@ export const Sidebar: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 };

@@ -1,16 +1,22 @@
 import type React from "react";
 import { BiArrowBack } from "react-icons/bi";
 import { MessageBox } from "./MessageBox";
-import { sendMessageToConversation } from "../api/message";
+import {
+    sendMessageToConversation,
+} from "../api/message";
 import { useInboxStore } from "../store/inbox";
 import { useCurrentUser } from "../context/AuthContext";
 import { useMessagesForConversation } from "../hooks/MessageConversation";
+import { useRef } from "react";
 
 export const Chat: React.FC = () => {
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+
     const inboxStore = useInboxStore();
     const currentUser = useCurrentUser();
     const selectedConversation = inboxStore.getSelectedConversation();
-    const { data } = useMessagesForConversation(selectedConversation);
+
+    const { data, handleScroll } = useMessagesForConversation(selectedConversation, scrollRef);
 
     const handleMessageSubmit = async (content: string) => {
         if (!selectedConversation) return;
@@ -41,11 +47,15 @@ export const Chat: React.FC = () => {
                         </>
                     </h1>
                 </div>
-                {selectedConversation?.conversation_id && (
-                    <div className="bg-chatbox fixed top-14 bottom-20 min-h-0 sm:w-[calc(100svw-24rem)] flex flex-col justify-end">
-                        {/* Scrollable message container with reverse column */}
-                        <div className="overflow-y-auto flex-1 px-4 flex   gap-2 flex-col-reverse">
-                            {data?.map((msg) => {
+                <div className="bg-chatbox fixed top-14 bottom-20 min-h-0 sm:w-[calc(100svw-24rem)] flex flex-col justify-end">
+                    <div
+                        className="overflow-y-auto flex-1 px-4 flex py-4  gap-2 flex-col-reverse"
+                        ref={scrollRef}
+                        onScroll={handleScroll}
+                        id="obs"
+                    >
+                        {selectedConversation?.conversation_id &&
+                            data?.map((msg) => {
                                 const isMyMsg =
                                     msg.author_id == currentUser?.data?.id;
                                 return (
@@ -71,9 +81,8 @@ export const Chat: React.FC = () => {
                                     </div>
                                 );
                             })}
-                        </div>
                     </div>
-                )}
+                </div>
 
                 <MessageBox submitHandler={handleMessageSubmit} />
             </div>

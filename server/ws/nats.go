@@ -36,8 +36,6 @@ func (n *NATSPublisher) InitNATS(natsURL string) (*nats.Conn, error) {
 func (n *NATSPublisher) InitMsgListener() {
 	/* This function will receive messages fromNATS and dispatch to all sockets in rooms */
 	_, err := nc.Subscribe("message", func(m *nats.Msg) {
-		// log.Printf("Received NATS msg: %s\n", string(m.Data))
-
 		// Unmarshals received JSON into model for further processing
 		var msg api.MessageModel
 		err := json.Unmarshal(m.Data, &msg)

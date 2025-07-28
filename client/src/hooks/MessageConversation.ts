@@ -10,9 +10,12 @@ import type { IInboxEntry } from "../ws/types";
 import { log } from "../utils";
 
 export const useMessagesForConversation = (
-    selectedConversation: IInboxEntry | undefined
+    selectedConversation: IInboxEntry | undefined,
+    chatboxRef: React.RefObject<HTMLDivElement | null>
 ) => {
     const [loaded, setLoaded] = useState<boolean>(false);
+    const [isAtTop, setIsAtTop] = useState<boolean>(true);
+    const [preventFetch, setPreventFetch] = useState<boolean>(false);
 
     const userCache = useUserCacheStore();
     const messageStore = useMessageStore();
@@ -35,19 +38,63 @@ export const useMessagesForConversation = (
     const messageQuery = useQuery({
         queryKey: ["chat-messages"],
         queryFn: async (): Promise<IMessageData[]> => {
+            if (!selectedConversation) return [];
+            const data = messageStore.getConversationMessages(
+                selectedConversation.conversation_id
+            );
+            // In case messages already exist, then a new query trigger means that the user wants to fetch older messages, so include this as part of query
+            let oldestMsgID: string | undefined = undefined;
+            if (data) {
+                oldestMsgID = data[data.length - 1].id;
+            }
+
             const resp = await fetchConversationMessages(
                 selectedConversation!.conversation_id,
-                20
+                20,
+                oldestMsgID
             );
             if (resp.error) {
                 throw new APIError(resp.message, resp.status);
             }
-            setLoaded(true)
+
+            if (resp.data.length == 0) {
+                // If query returns no messages, that means either the user has scrolled to the top of the conversation, or theres no messages in the conversation. No point in fetching again.
+                setPreventFetch(true);
+            }
+
+            setLoaded(true);
             return resp.data;
         },
         retry: false,
         enabled: false,
     });
+
+    const handleScroll = () => {
+        // Handle scroll for fetching older messages
+        if (chatboxRef.current) {
+            if (
+                Math.abs(
+                    chatboxRef.current.clientHeight -
+                        chatboxRef.current.scrollTop -
+                        chatboxRef.current.scrollHeight
+                ) < 5
+            ) {
+                if (!isAtTop) {
+                    // Prevent re-triggering if already at top
+
+                    if (!messageQuery.isFetching && !preventFetch) {
+                        messageQuery.refetch();
+                        setIsAtTop(true);
+                        
+                    }
+                }
+            } else {
+                if (isAtTop) {
+                    setIsAtTop(false); // Update state when no longer at top
+                }
+            }
+        }
+    };
 
     useEffect(() => {
         if (selectedConversation != null) {
@@ -66,7 +113,7 @@ export const useMessagesForConversation = (
             if (msg == undefined) {
                 messageQuery.refetch();
             } else {
-                setLoaded(true)
+                setLoaded(true);
             }
         }
     }, [selectedConversation]);
@@ -82,7 +129,7 @@ export const useMessagesForConversation = (
                 ) {
                     messageStore.storeMessages(
                         selectedConversation?.conversation_id,
-                        messageQuery.data!
+                        messageQuery.data
                     );
                 } else {
                     log(
@@ -118,10 +165,14 @@ export const useMessagesForConversation = (
     }, [messageQuery.isError, messageQuery.error]);
 
     if (selectedConversation) {
-        return {data: messageStore.getConversationMessages(
-            selectedConversation.conversation_id
-        ), loaded};
+        return {
+            data: messageStore.getConversationMessages(
+                selectedConversation.conversation_id
+            ),
+            handleScroll,
+            loaded,
+        };
     } else {
-        return {data: [], loaded};
+        return { data: [], handleScroll, loaded };
     }
 };
