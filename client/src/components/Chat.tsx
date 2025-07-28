@@ -1,9 +1,7 @@
 import type React from "react";
 import { BiArrowBack } from "react-icons/bi";
 import { MessageBox } from "./MessageBox";
-import {
-    sendMessageToConversation,
-} from "../api/message";
+import { sendMessageToConversation } from "../api/message";
 import { useInboxStore } from "../store/inbox";
 import { useCurrentUser } from "../context/AuthContext";
 import { useMessagesForConversation } from "../hooks/MessageConversation";
@@ -16,14 +14,17 @@ export const Chat: React.FC = () => {
     const currentUser = useCurrentUser();
     const selectedConversation = inboxStore.getSelectedConversation();
 
-    const { data, handleScroll } = useMessagesForConversation(selectedConversation, scrollRef);
+    const { data, handleScroll } = useMessagesForConversation(
+        selectedConversation,
+        scrollRef,
+    );
 
     const handleMessageSubmit = async (content: string) => {
         if (!selectedConversation) return;
 
         const resp = await sendMessageToConversation(
             selectedConversation.conversation_id,
-            content
+            content,
         );
         if (resp.error) {
             console.error(resp.message);

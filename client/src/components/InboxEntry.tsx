@@ -12,13 +12,13 @@ interface Props {
 
 export const InboxEntry: React.FC<Props> = (props) => {
     const inboxStore = useInboxStore();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const selectedConversation = inboxStore.getSelectedConversation();
 
     return (
         <div
             onClick={() => {
-                navigate(`/conversations/${props.conversationID}`)
+                navigate(`/conversations/${props.conversationID}`);
             }}
             className={
                 "hover:bg-neutral-900 rounded-md flex gap-3 p-3 items-center justify-between cursor-pointer " +

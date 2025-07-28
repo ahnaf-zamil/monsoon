@@ -7,7 +7,7 @@ import { useEffect } from "react";
 
 export const Home: React.FC = () => {
     const params = useParams();
-    const loc = useLocation()
+    const loc = useLocation();
     const inboxStore = useInboxStore();
     const selectedConversation = inboxStore.getSelectedConversation();
 

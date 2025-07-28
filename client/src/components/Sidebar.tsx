@@ -12,18 +12,20 @@ export const Sidebar: React.FC = () => {
     return (
         <div className="flex">
             <div className="h-[calc(100svh)] w-full block sm:w-96 sm:block relative border-0 sm:border-r-[1px] sm:border-r-neutral-200 dark:sm:border-r-neutral-800">
-               <ConversationSearch/>
+                <ConversationSearch />
                 <div className="absolute top-28 left-0 right-0 bottom-0 p-2 mb-4 flex flex-col justify-between">
                     <div className="grid gap-2 overflow-y-auto">
                         {inboxState.isSynced ? (
                             inboxState.conversations.map((convo) => (
-                                <><InboxEntry
-                                    conversationID={convo.conversation_id}
-                                    name={convo.name}
-                                    last_msg_time={convo.updated_at}
-                                    user_id={convo.user_id}
-                                    key={convo.conversation_id}
-                                /></>
+                                <>
+                                    <InboxEntry
+                                        conversationID={convo.conversation_id}
+                                        name={convo.name}
+                                        last_msg_time={convo.updated_at}
+                                        user_id={convo.user_id}
+                                        key={convo.conversation_id}
+                                    />
+                                </>
                             ))
                         ) : (
                             <span className="animate-pulse">

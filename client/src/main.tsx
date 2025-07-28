@@ -14,7 +14,10 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <BrowserRouter>
             <QueryClientProvider client={queryClient}>
-                <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" />
+                <ReactQueryDevtools
+                    initialIsOpen={false}
+                    buttonPosition="top-right"
+                />
                 <AuthProvider>
                     <SocketProvider>
                         <App />

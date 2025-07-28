@@ -11,7 +11,7 @@ import { log } from "../utils";
 
 export const useMessagesForConversation = (
     selectedConversation: IInboxEntry | undefined,
-    chatboxRef: React.RefObject<HTMLDivElement | null>
+    chatboxRef: React.RefObject<HTMLDivElement | null>,
 ) => {
     const [loaded, setLoaded] = useState<boolean>(false);
     const [isAtTop, setIsAtTop] = useState<boolean>(true);
@@ -23,7 +23,7 @@ export const useMessagesForConversation = (
 
     const fetchAndCacheConversationUser = async (
         _conversationID: string,
-        userID: string
+        userID: string,
     ) => {
         // WIP: Fetch DM user data from API and store in cache
         const cachedUser = userCache.getUser(userID);
@@ -40,7 +40,7 @@ export const useMessagesForConversation = (
         queryFn: async (): Promise<IMessageData[]> => {
             if (!selectedConversation) return [];
             const data = messageStore.getConversationMessages(
-                selectedConversation.conversation_id
+                selectedConversation.conversation_id,
             );
             // In case messages already exist, then a new query trigger means that the user wants to fetch older messages, so include this as part of query
             let oldestMsgID: string | undefined = undefined;
@@ -51,7 +51,7 @@ export const useMessagesForConversation = (
             const resp = await fetchConversationMessages(
                 selectedConversation!.conversation_id,
                 20,
-                oldestMsgID
+                oldestMsgID,
             );
             if (resp.error) {
                 throw new APIError(resp.message, resp.status);
@@ -76,7 +76,7 @@ export const useMessagesForConversation = (
                 Math.abs(
                     chatboxRef.current.clientHeight -
                         chatboxRef.current.scrollTop -
-                        chatboxRef.current.scrollHeight
+                        chatboxRef.current.scrollHeight,
                 ) < 5
             ) {
                 if (!isAtTop) {
@@ -85,7 +85,6 @@ export const useMessagesForConversation = (
                     if (!messageQuery.isFetching && !preventFetch) {
                         messageQuery.refetch();
                         setIsAtTop(true);
-                        
                     }
                 }
             } else {
@@ -104,7 +103,7 @@ export const useMessagesForConversation = (
                 // Cache conversation user, WIP
                 fetchAndCacheConversationUser(
                     selectedConversation.conversation_id,
-                    selectedConversation.user_id!
+                    selectedConversation.user_id!,
                 ); // user_id will always be present in DM conversations
             }
 
@@ -129,12 +128,12 @@ export const useMessagesForConversation = (
                 ) {
                     messageStore.storeMessages(
                         selectedConversation?.conversation_id,
-                        messageQuery.data
+                        messageQuery.data,
                     );
                 } else {
                     log(
                         "warn",
-                        "Mismatched conversation data — skipping store"
+                        "Mismatched conversation data — skipping store",
                     );
                 }
             }
@@ -167,7 +166,7 @@ export const useMessagesForConversation = (
     if (selectedConversation) {
         return {
             data: messageStore.getConversationMessages(
-                selectedConversation.conversation_id
+                selectedConversation.conversation_id,
             ),
             handleScroll,
             loaded,
