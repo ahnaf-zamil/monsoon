@@ -17,20 +17,28 @@ interface MessageState {
 export const useMessageStore = create<MessageState>((set, get) => ({
     messages: {},
     storeMessages: (conversationID: string, newMessages: IMessageData[]) => {
-        set((state) => {
-            let msg: IMessageData[];
-            const existingMessages = state.messages[conversationID];
-            if (existingMessages == undefined) {
-                msg = newMessages;
-            } else {
-                msg = [...existingMessages, ...newMessages];
-            }
-            msg.sort((a, b) => b.created_at - a.created_at);
-            return {
-                messages: { ...state.messages, [conversationID]: msg },
-            };
-        });
-    },
+    set((state) => {
+        const existingMessages = state.messages[conversationID] || [];
+
+        // Merge and deduplicate based on message ID
+        const allMessages = [...existingMessages, ...newMessages];
+
+        const uniqueMessagesMap: Record<string, IMessageData> = {};
+        for (const msg of allMessages) {
+            uniqueMessagesMap[msg.id] = msg;
+        }
+
+        const dedupedMessages = Object.values(uniqueMessagesMap);
+        dedupedMessages.sort((a, b) => b.created_at - a.created_at);
+
+        return {
+            messages: {
+                ...state.messages,
+                [conversationID]: dedupedMessages,
+            },
+        };
+    });
+},
     getConversationMessages: (
         conversationID: string,
     ): IMessageData[] | undefined => {

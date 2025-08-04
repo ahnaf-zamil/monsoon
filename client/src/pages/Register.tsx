@@ -22,11 +22,12 @@ export const Register: React.FC = () => {
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
 
+    
     useEffect(() => {
-        if (currentUser) {
+        if (currentUser.isSuccess) {
             navigate("/");
         }
-    }, [currentUser, navigate]);
+    }, [currentUser.isPending, navigate]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
