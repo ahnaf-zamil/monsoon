@@ -6,6 +6,7 @@ import { useInboxStore } from "../store/inbox";
 import { useCurrentUser } from "../context/AuthContext";
 import { useMessagesForConversation } from "../hooks/MessageConversation";
 import { useRef } from "react";
+import { MessageBubble } from "./MessageBubble";
 
 export const Chat: React.FC = () => {
     const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -60,26 +61,10 @@ export const Chat: React.FC = () => {
                                 const isMyMsg =
                                     msg.author_id == currentUser?.data?.id;
                                 return (
-                                    <div
-                                        key={msg.id}
-                                        className={`flex justify-${
-                                            !isMyMsg ? "start" : "end"
-                                        }`}
-                                    >
-                                        {isMyMsg ? (
-                                            <div
-                                                className={`bg-chatbubble-sender text-white px-4 py-2 rounded-lg max-w-xs`}
-                                            >
-                                                {msg.content}
-                                            </div>
-                                        ) : (
-                                            <div
-                                                className={`bg-chatbubble-recipient text-white px-4 py-2 rounded-lg max-w-xs`}
-                                            >
-                                                {msg.content}
-                                            </div>
-                                        )}
-                                    </div>
+                                    <MessageBubble
+                                        msg={msg}
+                                        isMyMsg={isMyMsg}
+                                    />
                                 );
                             })}
                     </div>

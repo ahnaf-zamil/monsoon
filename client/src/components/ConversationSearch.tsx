@@ -2,7 +2,7 @@ import type React from "react";
 
 export const ConversationSearch: React.FC = () => {
     return (
-        <div className="flex absolute top-14 left-0 right-0 h-14 justify-center">
+        <div className="flex absolute top-17 left-0 right-0 h-14 justify-center">
             <div className="flex items-center gap-5 w-full mx-5 relative">
                 <div className="absolute h-4 pl-3 pointer-events-none text-neutral-600 dark:text-neutral-500"></div>
                 <input
