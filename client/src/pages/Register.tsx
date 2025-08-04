@@ -22,7 +22,6 @@ export const Register: React.FC = () => {
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
 
-    
     useEffect(() => {
         if (currentUser.isSuccess) {
             navigate("/");
