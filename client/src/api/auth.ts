@@ -51,7 +51,6 @@ export const createUser = async (
 };
 
 export const getAuthenticatedUser = async (): Promise<IAPIResponse<any>> => {
-    // TODO: Implement on backend
     const response = await apiClient.get("/user/me");
     return response.data;
 };

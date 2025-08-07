@@ -89,7 +89,6 @@ func (ctrl *MessageController) CreateMessageUserRoute(c *gin.Context) {
 	}
 
 	msgID := lib.GenerateSnowflakeID()
-	// TODO: Revamp msg model when we set up msg DB
 	payload := api.MessageModel{
 		ID:             msgID.String(),
 		Content:        req.Content,
@@ -153,7 +152,6 @@ func (ctrl *MessageController) CreateMessageConversationRoute(c *gin.Context) {
 	}
 
 	msgID := lib.GenerateSnowflakeID()
-	// TODO: Revamp msg model when we set up msg DB
 	payload := api.MessageModel{
 		ID:             msgID.String(),
 		Content:        req.Content,

@@ -8,6 +8,7 @@ interface Props {
     name: string;
     last_msg_time: number;
     user_id: string | null;
+    onClick?: () => void;
 }
 
 export const InboxEntry: React.FC<Props> = (props) => {
@@ -18,6 +19,7 @@ export const InboxEntry: React.FC<Props> = (props) => {
     return (
         <div
             onClick={() => {
+                if (props.onClick) props.onClick();
                 navigate(`/conversations/${props.conversationID}`);
             }}
             className={

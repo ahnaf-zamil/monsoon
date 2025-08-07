@@ -27,26 +27,6 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
     return (
         <>
             <div className="bg-chatbox absolute bottom-0 flex-grow h-20 px-5 flex items-center gap-2 w-full">
-                {/* {imgBase64 && (
-          <div className="absolute top-0 -translate-y-full">
-            <div className="relative w-24">
-              <button
-                type="button"
-                className="bg-neutral-400 absolute flex items-center rounded-full aspect-square p-2 top-0 right-0 translate-x-1/2 -translate-y-1/2 cursor-pointer"
-                onClick={() => {
-                  setImgBase64("");
-                }}
-              >
-                <IoClose size="1rem" />
-              </button>
-              <img
-                src={imgBase64}
-                alt="message image"
-                className="aspect-square object-cover rounded-xl"
-              />
-            </div>
-          </div>
-        )} */}
                 <div className="flex items-center gap-2 w-full my-3">
                     <div className="w-full relative flex flex-col">
                         {isEditing && (
@@ -57,7 +37,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ submitHandler }) => {
                         )}
                         <input
                             type="text"
-                            className={`outline outline-1 outline-primary w-full px-6 py-3 bg-neutral-200 placeholder:text-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:text-white`}
+                            className={`border-1 border-zinc-700 focus:border-zinc-600 outline-none rounded-md w-full px-6 py-3 bg-neutral-200 placeholder:text-neutral-600 dark:bg-neutral-800 dark:placeholder:text-neutral-500 dark:text-white`}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             onKeyDown={(e) => {
