@@ -42,4 +42,5 @@ func InitControllers(r *gin.Engine) {
 
 	user_ctrl := &UserController{UserDB: userDB}
 	user.GET("/me", authMiddleware, user_ctrl.UserGetCurrent)
+	user.GET("/search/:query", authMiddleware, user_ctrl.UserSearchUser)
 }
