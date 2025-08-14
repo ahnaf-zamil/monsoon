@@ -336,6 +336,31 @@ paths:
       summary: Get Current User
       tags:
       - users
+  /user/search/{username}:
+    get:
+      description: Search a user to create a new conversation
+      parameters:
+      - description: Query username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Search User
+      tags:
+      - users
 produces:
 - application/json
 securityDefinitions:

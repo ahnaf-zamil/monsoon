@@ -25,6 +25,8 @@ type IUserDB interface {
 	CreateUserSession(ctx context.Context, sessionID int64, userID int64, refreshToken string) error
 	GetSessionByAnyField(ctx context.Context, fields map[db.DBColumn]any) (*api.UserSessionModel, error)
 	GetUserAuthByID(ctx context.Context, userID string) (*api.UserAuthModel, error)
+	SearchUsersByUsername(ctx context.Context, username string) ([]api.UserModel, error)
+
 	// Util
 	GetUserByID(c context.Context, userID string) (*api.UserModel, error)
 }
@@ -219,7 +221,6 @@ func (u *UserDB) GetSessionByAnyField(ctx context.Context, fields map[db.DBColum
 }
 
 func (u *UserDB) GetUserAuthByID(ctx context.Context, userID string) (*api.UserAuthModel, error) {
-	// TODO: implement later
 	cols := []db.DBColumn{tables.ColAuthUserID, tables.ColAuthPasswordHash, tables.ColAuthPasswordSalt, tables.ColAuthEncryptionSalt, tables.ColAuthEncryptedSeed, tables.ColAuthNonce}
 	selected_columns := db.GenerateDBQueryFields(cols)
 
@@ -241,6 +242,25 @@ func (u *UserDB) GetUserAuthByID(ctx context.Context, userID string) (*api.UserA
 		// Else, just return user
 		return &authModel, nil
 	}
+}
+
+func (u *UserDB) SearchUsersByUsername(ctx context.Context, username string) ([]api.UserModel, error) {
+	/* Searches users by `username` column using ILIKE */
+	cols := []db.DBColumn{tables.ColUserID, tables.ColUserUsername, tables.ColUserDisplayName, tables.ColUserCreatedAt}
+	selected_columns := db.GenerateDBQueryFields(cols)
+
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE %s ILIKE $1 LIMIT 10", selected_columns, tables.TableUsers, tables.ColUserUsername.Column)
+	rows, err := u.AppDB.DBPool.Query(ctx, query, username+"%")
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByName[api.UserModel])
+	if err != nil {
+		return nil, err
+	}
+
+	return users, err
 }
 
 func insertUser(tx pgx.Tx, ctx context.Context, id int64, username, display_name string, created_at int64, updated_at int64) error {

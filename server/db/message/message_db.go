@@ -64,7 +64,6 @@ func (m *MessageDB) GetConversationMessages(ctx context.Context, conversationID 
 			selected_columns,
 			tables.TableMessages, tables.ColMessageConversationID.Column, tables.ColMessageID.Column, tables.ColMessageCreatedAt.Column)
 		rows, err = m.MsgDB.DBPool.Query(ctx, query, conversationID, before, count)
-		log.Println("omgoj")
 	} else {
 		query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1 ORDER BY %s DESC LIMIT $2",
 			selected_columns,
