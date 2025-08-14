@@ -7,23 +7,22 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 import { SocketProvider } from "./context/SocketContext.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "./components/ui/toaster.tsx";
 
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <BrowserRouter>
-            <QueryClientProvider client={queryClient}>
-                <ReactQueryDevtools
-                    initialIsOpen={false}
-                    buttonPosition="top-right"
-                />
-                <AuthProvider>
-                    <SocketProvider>
-                        <App />
-                    </SocketProvider>
-                </AuthProvider>
-            </QueryClientProvider>
-        </BrowserRouter>
-    </StrictMode>,
+  <StrictMode>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-right" />
+        <AuthProvider>
+          <SocketProvider>
+            <App />
+          </SocketProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+      <Toaster />
+    </BrowserRouter>
+  </StrictMode>
 );
