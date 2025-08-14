@@ -7,6 +7,7 @@ package mocks
 import (
 	context "context"
 	api "monsoon/api"
+	db "monsoon/db"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -49,6 +50,21 @@ func (mr *MockIConversationDBMockRecorder) CreateUserDM(ctx, conversationID, use
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserDM", reflect.TypeOf((*MockIConversationDB)(nil).CreateUserDM), ctx, conversationID, user1ID, user2ID)
 }
 
+// GetConvesationParticipantsByFields mocks base method.
+func (m *MockIConversationDB) GetConvesationParticipantsByFields(ctx context.Context, fields map[db.DBColumn]any) ([]api.ConversationParticipant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConvesationParticipantsByFields", ctx, fields)
+	ret0, _ := ret[0].([]api.ConversationParticipant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetConvesationParticipantsByFields indicates an expected call of GetConvesationParticipantsByFields.
+func (mr *MockIConversationDBMockRecorder) GetConvesationParticipantsByFields(ctx, fields interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConvesationParticipantsByFields", reflect.TypeOf((*MockIConversationDB)(nil).GetConvesationParticipantsByFields), ctx, fields)
+}
+
 // GetExistingDM mocks base method.
 func (m *MockIConversationDB) GetExistingDM(ctx context.Context, user1ID, user2ID string) (*api.DirectConversationModel, error) {
 	m.ctrl.T.Helper()
@@ -62,4 +78,34 @@ func (m *MockIConversationDB) GetExistingDM(ctx context.Context, user1ID, user2I
 func (mr *MockIConversationDBMockRecorder) GetExistingDM(ctx, user1ID, user2ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExistingDM", reflect.TypeOf((*MockIConversationDB)(nil).GetExistingDM), ctx, user1ID, user2ID)
+}
+
+// GetUserConversationByID mocks base method.
+func (m *MockIConversationDB) GetUserConversationByID(ctx context.Context, conversationID, userID string) (*api.InboxConversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserConversationByID", ctx, conversationID, userID)
+	ret0, _ := ret[0].(*api.InboxConversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserConversationByID indicates an expected call of GetUserConversationByID.
+func (mr *MockIConversationDBMockRecorder) GetUserConversationByID(ctx, conversationID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserConversationByID", reflect.TypeOf((*MockIConversationDB)(nil).GetUserConversationByID), ctx, conversationID, userID)
+}
+
+// GetUserInboxConversations mocks base method.
+func (m *MockIConversationDB) GetUserInboxConversations(ctx context.Context, userID string) ([]api.InboxConversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserInboxConversations", ctx, userID)
+	ret0, _ := ret[0].([]api.InboxConversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserInboxConversations indicates an expected call of GetUserInboxConversations.
+func (mr *MockIConversationDBMockRecorder) GetUserInboxConversations(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInboxConversations", reflect.TypeOf((*MockIConversationDB)(nil).GetUserInboxConversations), ctx, userID)
 }
