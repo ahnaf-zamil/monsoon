@@ -45,7 +45,10 @@ export const InboxEntry: React.FC<Props> = (props) => {
             <div className="w-full">
               <div className="flex flex-row justify-between">
                 <Label className="text-foreground/40 font-normal w-28 truncate">
-                  The quick brown fox jumped over the poop
+                  {inboxStore.getSelectedConversation()?.conversation_id ===
+                  undefined
+                    ? `@${props.name}`
+                    : "The quick brown fox jumped over the poop"}
                 </Label>
                 <Label className="text-foreground/30">
                   {formatUnixToLocalTime(props.last_msg_time)}
