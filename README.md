@@ -7,7 +7,7 @@ Monsoon is a secure, scalable, end-to-end encrypted messaging platform designed 
 
 ## Technology
 
-- Backend: `Go, Gin, NATS, WebSocket, PostgreSQL`
+- Backend: `Go, Gin, NATS, WebSocket, PostgreSQL (Citus)`
 - Frontend: `TypeScript, React, Web Crypto API`
 - Cryptography: `TweetNaCl, Ed25519, X25519, AES-GCM, Argon2`
 
@@ -61,14 +61,6 @@ Start the API server
 ```
 
 API Docs at `http://localhost:9000/swagger/index.html`
-
-## To Do
-
-- Set up separate DB for persisting messages
-- Implement message encryption on client side (requirement: need to store key somehow, or pull key from DB upon page load using password)
-- Room sync on client side upon connection
-- Implement message bucketing and partitons
-- Store key seed on client side (Possibly in SessionStorage with BroadcastChannel for inter-tab communication?)
 
 ## License
 
