@@ -1,20 +1,49 @@
 services:
-  postgres:
-    container_name: monsoon-postgres
-    image: postgres:17-alpine
-    ports:
-      - 5432:5432
+  master:
+    container_name: "monsoon-citus_master"
+    image: "citusdata/citus:13.0.3"
+    ports: ["${COORDINATOR_EXTERNAL_PORT:-5432}:5432"]
+    labels: ["com.citusdata.role=Master"]
+    environment: &AUTH
+      POSTGRES_USER: "monsoon"
+      POSTGRES_PASSWORD: "monsoon"
+      PGUSER: "monsoon"
+      PGPASSWORD: "monsoon"
+      POSTGRES_DB: "monsoon"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+      CITUS_HOST: "monsoon-citus_master"
     volumes:
-      - ./.docker/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=monsoon
-      - POSTGRES_USER=monsoon
-      - POSTGRES_DB=monsoon
+      - master-data:/var/lib/postgresql/data
+
+  worker:
+    container_name: "monsoon-citus_worker"
+    image: "citusdata/citus:13.0.3"
+    labels: ["com.citusdata.role=Worker"]
+    depends_on: [manager]
+    environment: *AUTH
+    command: "/wait-for-manager.sh"
+    volumes:
+      - healthcheck-volume:/healthcheck
+      - worker-data:/var/lib/postgresql/data
+
+  manager:
+    container_name: "monsoon-citus_manager"
+    image: "citusdata/membership-manager:0.3.0"
+    volumes:
+      - "${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock"
+      - healthcheck-volume:/healthcheck
+    depends_on: [master]
+    environment: *AUTH
 
   nats:
-    image: nats:2-alpine
     container_name: monsoon-nats
+    image: nats:2-alpine
     ports:
       - 4222:4222
       - 6222:6222
       - 8222:8222
+
+volumes:
+  healthcheck-volume:
+  master-data:
+  worker-data:

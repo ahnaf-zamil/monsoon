@@ -17,6 +17,5 @@ func main() {
 	}
 
 	conf := util.LoadDotenvConfig()
-	db.CreateAppDBSchemas(conf)
-	db.CreateMsgDBSchemas(conf)
+	db.CreateDBSchemas(conf)
 }
