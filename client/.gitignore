@@ -24,4 +24,5 @@ dist-ssr
 *.sw?
 
 # This will be created by "yarn build:css" command
-index.css
+# This no longer will be auto-generated, it is static now
+# index.css
