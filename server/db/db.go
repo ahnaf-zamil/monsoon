@@ -11,7 +11,6 @@ import (
 )
 
 var userDBPool *pgxpool.Pool
-var msgDBPool *pgxpool.Pool
 
 // Stub during testing
 type IPgxPool interface {
@@ -23,10 +22,6 @@ type IPgxPool interface {
 }
 
 type AppDB struct {
-	DBPool IPgxPool
-}
-
-type MsgDB struct {
 	DBPool IPgxPool
 }
 
@@ -82,17 +77,7 @@ func CreateAppDBPool(dbURL string) error {
 		return err
 	}
 	userDBPool = pool
-	log.Println("Created App database connection pool")
-	return nil
-}
-
-func CreateMsgDBPool(dbURL string) error {
-	pool, err := CreateConnectionPool(dbURL)
-	if err != nil {
-		return err
-	}
-	msgDBPool = pool
-	log.Println("Created Message database connection pool")
+	log.Println("Created database connection pool")
 	return nil
 }
 
@@ -100,16 +85,8 @@ func CloseConnection() {
 	if userDBPool != nil {
 		userDBPool.Close()
 	}
-
-	if msgDBPool != nil {
-		msgDBPool.Close()
-	}
 }
 
 func GetAppDB() *AppDB {
 	return &AppDB{DBPool: userDBPool}
-}
-
-func GetMsgDB() *MsgDB {
-	return &MsgDB{DBPool: msgDBPool}
 }

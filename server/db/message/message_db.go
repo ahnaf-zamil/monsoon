@@ -13,7 +13,7 @@ import (
 )
 
 type MessageDB struct {
-	MsgDB *db.MsgDB
+	AppDB *db.AppDB
 }
 
 type IMessageDB interface {
@@ -22,12 +22,12 @@ type IMessageDB interface {
 }
 
 func GetMessageDB() IMessageDB {
-	msg_db := &MessageDB{MsgDB: db.GetMsgDB()}
+	msg_db := &MessageDB{AppDB: db.GetAppDB()}
 	return msg_db
 }
 
 func (m *MessageDB) CreateMessage(ctx context.Context, messageID int64, conversationID string, authorID string, content any) error {
-	tx, err := m.MsgDB.DBPool.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := m.AppDB.DBPool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
@@ -63,12 +63,12 @@ func (m *MessageDB) GetConversationMessages(ctx context.Context, conversationID 
 		query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1 AND %s < $2::BIGINT ORDER BY %s DESC LIMIT $3",
 			selected_columns,
 			tables.TableMessages, tables.ColMessageConversationID.Column, tables.ColMessageID.Column, tables.ColMessageCreatedAt.Column)
-		rows, err = m.MsgDB.DBPool.Query(ctx, query, conversationID, before, count)
+		rows, err = m.AppDB.DBPool.Query(ctx, query, conversationID, before, count)
 	} else {
 		query := fmt.Sprintf("SELECT %s FROM %s WHERE %s = $1 ORDER BY %s DESC LIMIT $2",
 			selected_columns,
 			tables.TableMessages, tables.ColMessageConversationID.Column, tables.ColMessageCreatedAt.Column)
-		rows, err = m.MsgDB.DBPool.Query(ctx, query, conversationID, count)
+		rows, err = m.AppDB.DBPool.Query(ctx, query, conversationID, count)
 	}
 
 	// The value_arr maintains same sequence of parameters as the columns, which is why we separated the map into two slices
