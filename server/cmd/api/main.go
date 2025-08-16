@@ -58,9 +58,6 @@ func main() {
 	if err := db.CreateAppDBPool(conf.AppDBPostgresURL); err != nil {
 		panic(err)
 	}
-	if err := db.CreateMsgDBPool(conf.MessageDBPostgresURL); err != nil {
-		panic(err)
-	}
 	defer db.CloseConnection()
 
 	// Initialize Gin with CORS, and register controller routes
