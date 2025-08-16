@@ -19,12 +19,6 @@ TODO: Write features
 
 ### Client
 
-Build CSS
-
-```
-yarn build:css
-```
-
 Run dev server
 
 ```
